@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
 import { usePlayerMeta } from "@/components/player/hooks/usePlayerMeta";
+import { conf } from "@/setup/config";
 
 // Thanks Nemo, Custom, and Roomba for this API
 const BASE_URL = "https://fed-intro-api.up.railway.app";
@@ -8,11 +9,12 @@ const MAX_RETRIES = 3;
 
 export function useSkipTime() {
   const { playerMeta: meta } = usePlayerMeta();
-  const [skiptime, setSkiptime] = useState(0);
+  const [skiptime, setSkiptime] = useState(null);
 
   useEffect(() => {
     const fetchSkipTime = async (retries = 0): Promise<void> => {
       if (!meta?.tmdbId || meta.type === "movie") return;
+      if (!conf().ALLOW_FEBBOX_KEY) return;
 
       try {
         const apiUrl = `${BASE_URL}/${meta.tmdbId}/${meta.season?.number}/${meta.episode?.number}`;
@@ -29,10 +31,12 @@ export function useSkipTime() {
 
         const skipTime = data.introSkipTime || null;
 
+        // eslint-disable-next-line no-console
+        console.log("Skip time:", skipTime);
         setSkiptime(skipTime);
       } catch (error) {
         console.error("Error fetching skip time:", error);
-        setSkiptime(0);
+        setSkiptime(null);
       }
     };
 
