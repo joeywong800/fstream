@@ -16,6 +16,8 @@ import { useAuthStore } from "@/stores/auth";
 interface ProxyEditProps {
   proxyUrls: string[] | null;
   setProxyUrls: Dispatch<SetStateAction<string[] | null>>;
+  proxyTmdb: boolean;
+  setProxyTmdb: Dispatch<SetStateAction<boolean>>;
 }
 
 interface BackendEditProps {
@@ -28,7 +30,12 @@ interface FebboxTokenProps {
   setFebboxToken: Dispatch<SetStateAction<string | null>>;
 }
 
-function ProxyEdit({ proxyUrls, setProxyUrls }: ProxyEditProps) {
+function ProxyEdit({
+  proxyUrls,
+  setProxyUrls,
+  proxyTmdb,
+  setProxyTmdb,
+}: ProxyEditProps) {
   const { t } = useTranslation();
   const add = useCallback(() => {
     setProxyUrls((s) => [...(s ?? []), ""]);
@@ -53,6 +60,13 @@ function ProxyEdit({ proxyUrls, setProxyUrls }: ProxyEditProps) {
     [setProxyUrls],
   );
 
+  const toggleProxyUrls = useCallback(() => {
+    const newValue = proxyUrls === null ? [] : null;
+    setProxyUrls(newValue);
+    // Disable TMDB proxying when proxy workers are disabled
+    if (newValue === null) setProxyTmdb(false);
+  }, [proxyUrls, setProxyUrls, setProxyTmdb]);
+
   return (
     <SettingsCard>
       <div className="flex justify-between items-center gap-4">
@@ -69,10 +83,7 @@ function ProxyEdit({ proxyUrls, setProxyUrls }: ProxyEditProps) {
           </p>
         </div>
         <div>
-          <Toggle
-            onClick={() => setProxyUrls((s) => (s === null ? [] : null))}
-            enabled={proxyUrls !== null}
-          />
+          <Toggle onClick={toggleProxyUrls} enabled={proxyUrls !== null} />
         </div>
       </div>
       {proxyUrls !== null ? (
@@ -115,6 +126,24 @@ function ProxyEdit({ proxyUrls, setProxyUrls }: ProxyEditProps) {
           <Button theme="purple" onClick={add}>
             {t("settings.connections.workers.addButton")}
           </Button>
+          <Divider marginClass="my-6 px-8 box-content -mx-8" />
+
+          <div className="flex justify-between items-center gap-4">
+            <div className="my-3">
+              <p className="text-white font-bold mb-3">Proxy TMDB</p>
+              <p className="max-w-[30rem] font-medium">
+                Only needed if you can&apos;t access TheMovieDB directly, such
+                as if your ISP blocks it. It is recomended to disable the
+                Discover secton to improve performance with this.
+              </p>
+            </div>
+            <div>
+              <Toggle
+                enabled={proxyTmdb}
+                onClick={() => setProxyTmdb(!proxyTmdb)}
+              />
+            </div>
+          </div>
         </>
       ) : null}
     </SettingsCard>
@@ -286,6 +315,8 @@ export function ConnectionsPart(
         <ProxyEdit
           proxyUrls={props.proxyUrls}
           setProxyUrls={props.setProxyUrls}
+          proxyTmdb={props.proxyTmdb}
+          setProxyTmdb={props.setProxyTmdb}
         />
         <BackendEdit
           backendUrl={props.backendUrl}

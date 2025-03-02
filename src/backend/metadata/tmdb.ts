@@ -1,7 +1,9 @@
 import slugify from "slugify";
 
 import { conf } from "@/setup/config";
+import { usePreferencesStore } from "@/stores/preferences";
 import { MediaItem } from "@/utils/mediaTypes";
+import { getProxyUrls } from "@/utils/proxyUrls";
 
 import { MWMediaMeta, MWMediaType, MWSeasonMeta } from "./types/mw";
 import {
@@ -143,8 +145,8 @@ export function decodeTMDBId(
   };
 }
 
-const tmdbBaseUrl1 = "https://api.themoviedb.org/3";
-const tmdbBaseUrl2 = "https://api.tmdb.org/3";
+const tmdbBaseUrl1 = "https://api.themoviedb.org/3/";
+const tmdbBaseUrl2 = "https://api.tmdb.org/3/";
 
 const apiKey = conf().TMDB_READ_API_KEY;
 
@@ -159,8 +161,44 @@ function abortOnTimeout(timeout: number): AbortSignal {
   return controller.signal;
 }
 
+let proxyRotationIndex = 0;
+
+function getNextProxy(proxyUrls: string[]): string | undefined {
+  if (!proxyUrls.length) return undefined;
+  const proxy = proxyUrls[proxyRotationIndex % proxyUrls.length];
+  proxyRotationIndex += 1;
+  return proxy;
+}
+
 export async function get<T>(url: string, params?: object): Promise<T> {
+  const proxyUrls = getProxyUrls();
+  const proxy = getNextProxy(proxyUrls);
+  const shouldProxyTmdb = usePreferencesStore.getState().proxyTmdb;
   if (!apiKey) throw new Error("TMDB API key not set");
+
+  // directly writing parameters, otherwise it will start the first parameter in the proxied request as "&" instead of "?" because it doesnt understand its proxied
+  const fullUrl = new URL(tmdbBaseUrl1 + url);
+  if (params) {
+    Object.entries(params).forEach(([key, value]) => {
+      fullUrl.searchParams.append(key, String(value));
+    });
+  }
+
+  if (proxy && shouldProxyTmdb) {
+    try {
+      return await mwFetch<T>(
+        `/?destination=${encodeURIComponent(fullUrl.toString())}`,
+        {
+          headers: tmdbHeaders,
+          baseURL: proxy,
+          signal: abortOnTimeout(5000),
+        },
+      );
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
   try {
     return await mwFetch<T>(encodeURI(url), {
       headers: tmdbHeaders,
@@ -238,7 +276,18 @@ export function getMediaDetails<
 }
 
 export function getMediaPoster(posterPath: string | null): string | undefined {
-  if (posterPath) return `https://image.tmdb.org/t/p/w342/${posterPath}`;
+  const shouldProxyTmdb = usePreferencesStore.getState().proxyTmdb;
+  const imgUrl = `https://image.tmdb.org/t/p/w342/${posterPath}`;
+
+  if (shouldProxyTmdb) {
+    const proxyUrls = getProxyUrls();
+    const proxy = getNextProxy(proxyUrls);
+    if (proxy) {
+      return `${proxy}/?destination=${imgUrl}`;
+    }
+  }
+
+  if (posterPath) return imgUrl;
 }
 
 export async function getEpisodes(
