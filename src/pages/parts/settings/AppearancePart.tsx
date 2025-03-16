@@ -5,7 +5,13 @@ import { Toggle } from "@/components/buttons/Toggle";
 import { Icon, Icons } from "@/components/Icon";
 import { Heading1 } from "@/components/utils/Text";
 
-const availableThemes = [
+interface themeData {
+  id: string;
+  selector: string;
+  key: string;
+}
+
+const availableThemes: themeData[] = [
   {
     id: "default",
     selector: "theme-default",
@@ -35,6 +41,11 @@ const availableThemes = [
     id: "classic",
     selector: "theme-classic",
     key: "settings.appearance.themes.classic",
+  },
+  {
+    id: "pink",
+    selector: "theme-pink",
+    key: "Pink",
   },
 ];
 
