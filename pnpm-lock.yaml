@@ -40,8 +40,8 @@ importers:
         specifier: ^0.7.2
         version: 0.7.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@movie-web/providers':
-        specifier: github:SamJ2104/smov-providers#production
-        version: https://codeload.github.com/SamJ2104/smov-providers/tar.gz/c2d0b044d549f25140a5bd641fb109da14ef6586
+        specifier: github:Pasithea0/smov-providers#production
+        version: https://codeload.github.com/Pasithea0/smov-providers/tar.gz/b419088651ec3a2581b33c0d6cc2c3e2936dcde2
       '@noble/hashes':
         specifier: ^1.5.0
         version: 1.5.0
@@ -1677,8 +1677,8 @@ packages:
       react: '>=16.8.0'
       react-dom: '>=16.8.0'
 
-  '@movie-web/providers@https://codeload.github.com/SamJ2104/smov-providers/tar.gz/c2d0b044d549f25140a5bd641fb109da14ef6586':
-    resolution: {tarball: https://codeload.github.com/SamJ2104/smov-providers/tar.gz/c2d0b044d549f25140a5bd641fb109da14ef6586}
+  '@movie-web/providers@https://codeload.github.com/Pasithea0/smov-providers/tar.gz/b419088651ec3a2581b33c0d6cc2c3e2936dcde2':
+    resolution: {tarball: https://codeload.github.com/Pasithea0/smov-providers/tar.gz/b419088651ec3a2581b33c0d6cc2c3e2936dcde2}
     version: 2.3.0
 
   '@noble/hashes@1.5.0':
@@ -6776,7 +6776,7 @@ snapshots:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
 
-  '@movie-web/providers@https://codeload.github.com/SamJ2104/smov-providers/tar.gz/c2d0b044d549f25140a5bd641fb109da14ef6586':
+  '@movie-web/providers@https://codeload.github.com/Pasithea0/smov-providers/tar.gz/b419088651ec3a2581b33c0d6cc2c3e2936dcde2':
     dependencies:
       cheerio: 1.0.0-rc.12
       cookie: 0.6.0
