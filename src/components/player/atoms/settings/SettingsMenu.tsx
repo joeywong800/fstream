@@ -8,9 +8,11 @@ import { useCaptions } from "@/components/player/hooks/useCaptions";
 import { Menu } from "@/components/player/internals/ContextMenu";
 import { Paragraph } from "@/components/utils/Text";
 import { useOverlayRouter } from "@/hooks/useOverlayRouter";
+import { useLanguageStore } from "@/stores/language";
 import { usePlayerStore } from "@/stores/player/store";
 import { qualityToString } from "@/stores/player/utils/qualities";
 import { useSubtitleStore } from "@/stores/subtitles";
+import { useThemeStore } from "@/stores/theme";
 import { getPrettyLanguageNameFromLocale } from "@/utils/language";
 
 import { useDownloadLink } from "./Downloads";
@@ -34,6 +36,14 @@ export function SettingsMenu({ id }: { id: string }) {
     return source?.name ?? "...";
   }, [currentSourceId]);
   const { toggleLastUsed } = useCaptions();
+  const activeTheme = useThemeStore((s) => s.theme);
+  const themeName = useMemo(() => {
+    return t(`settings.appearance.themes.${activeTheme || "default"}`);
+  }, [t, activeTheme]);
+  const language = useLanguageStore((s) => s.language);
+  const languageName = useMemo(() => {
+    return getPrettyLanguageNameFromLocale(language) ?? language;
+  }, [language]);
 
   const selectedLanguagePretty = selectedCaptionLanguage
     ? (getPrettyLanguageNameFromLocale(selectedCaptionLanguage) ??
@@ -85,27 +95,35 @@ export function SettingsMenu({ id }: { id: string }) {
         >
           {t("player.menus.settings.sourceItem")}
         </Menu.ChevronLink>
-        <Menu.Link
-          clickable
-          onClick={() =>
-            router.navigate(downloadable ? "/download" : "/download/unable")
-          }
-          rightSide={<Icon className="text-xl" icon={Icons.DOWNLOAD} />}
-          className={downloadable ? "opacity-100" : "opacity-50"}
-        >
-          {t("player.menus.settings.downloadItem")}
-        </Menu.Link>
-        <Menu.Link
-          clickable
-          onClick={handleWatchPartyClick}
-          rightSide={<Icon className="text-xl" icon={Icons.WATCH_PARTY} />}
-          className={downloadable ? "opacity-100" : "opacity-50"}
-        >
-          {t("player.menus.watchparty.watchpartyItem")}
-        </Menu.Link>
-        <Paragraph className="text-xs">
-          {t("player.menus.watchparty.notice")}
-        </Paragraph>
+        {new URLSearchParams(window.location.search).get("downloads") !==
+          "false" && (
+          <Menu.Link
+            clickable
+            onClick={() =>
+              router.navigate(downloadable ? "/download" : "/download/unable")
+            }
+            rightSide={<Icon className="text-xl" icon={Icons.DOWNLOAD} />}
+            className={downloadable ? "opacity-100" : "opacity-50"}
+          >
+            {t("player.menus.settings.downloadItem")}
+          </Menu.Link>
+        )}
+        {new URLSearchParams(window.location.search).get("watchparty") !==
+          "false" && (
+          <>
+            <Menu.Link
+              clickable
+              onClick={handleWatchPartyClick}
+              rightSide={<Icon className="text-xl" icon={Icons.WATCH_PARTY} />}
+              className={downloadable ? "opacity-100" : "opacity-50"}
+            >
+              {t("Watch Party")}
+            </Menu.Link>
+            <Paragraph className="text-xs">
+              Watch Party might not be available for some sources
+            </Paragraph>
+          </>
+        )}
       </Menu.Section>
 
       <Menu.SectionTitle>
@@ -131,6 +149,24 @@ export function SettingsMenu({ id }: { id: string }) {
         <Menu.ChevronLink onClick={() => router.navigate("/playback")}>
           {t("player.menus.settings.playbackItem")}
         </Menu.ChevronLink>
+        {new URLSearchParams(window.location.search).get(
+          "interface-settings",
+        ) !== "false" && (
+          <>
+            <Menu.ChevronLink
+              onClick={() => router.navigate("/theme")}
+              rightText={themeName}
+            >
+              {t("settings.appearance.title")}
+            </Menu.ChevronLink>
+            <Menu.ChevronLink
+              onClick={() => router.navigate("/language")}
+              rightText={languageName}
+            >
+              {t("settings.preferences.language")}
+            </Menu.ChevronLink>
+          </>
+        )}
       </Menu.Section>
     </Menu.Card>
   );
