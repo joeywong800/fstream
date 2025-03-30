@@ -1,9 +1,9 @@
 import classNames from "classnames";
-import { ReactNode, useCallback, useEffect } from "react";
+import { ReactNode, useCallback, useEffect, useRef, useState } from "react";
 import { Helmet } from "react-helmet-async";
 
 import { IconPatch } from "@/components/buttons/IconPatch";
-import { Icons } from "@/components/Icon";
+import { Icon, Icons } from "@/components/Icon";
 import { OverlayPortal } from "@/components/overlays/OverlayDisplay";
 import { Flare } from "@/components/utils/Flare";
 import { Heading2 } from "@/components/utils/Text";
@@ -177,6 +177,23 @@ interface DetailsContent {
   rating?: string;
   director?: string;
   actors?: string[];
+  type?: "movie" | "show";
+  seasonData?: {
+    seasons: Array<{
+      id: number;
+      name: string;
+      season_number: number;
+    }>;
+    episodes: Array<{
+      id: number;
+      name: string;
+      episode_number: number;
+      overview: string;
+      still_path: string | null;
+      air_date: string;
+      season_number: number;
+    }>;
+  };
 }
 
 function DetailsContent({ data }: { data: DetailsContent }) {
@@ -203,6 +220,30 @@ function DetailsContent({ data }: { data: DetailsContent }) {
       day: "numeric",
     });
   };
+
+  const [selectedSeason, setSelectedSeason] = useState<number>(1);
+  const carouselRef = useRef<HTMLDivElement>(null);
+
+  const handleScroll = (direction: "left" | "right") => {
+    if (!carouselRef.current) return;
+
+    const cardWidth = 256; // w-64 in pixels
+    const cardSpacing = 16; // space-x-4 in pixels
+    const scrollAmount = (cardWidth + cardSpacing) * 2;
+
+    const newScrollPosition =
+      carouselRef.current.scrollLeft +
+      (direction === "left" ? -scrollAmount : scrollAmount);
+
+    carouselRef.current.scrollTo({
+      left: newScrollPosition,
+      behavior: "smooth",
+    });
+  };
+
+  const currentSeasonEpisodes = data.seasonData?.episodes.filter(
+    (ep) => ep.season_number === selectedSeason,
+  );
 
   return (
     <div className="relative">
@@ -283,7 +324,7 @@ function DetailsContent({ data }: { data: DetailsContent }) {
 
         {/* Genres */}
         {data.genres && data.genres.length > 0 && (
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 mb-6">
             {data.genres.map((genre) => (
               <span
                 key={genre.id}
@@ -292,6 +333,105 @@ function DetailsContent({ data }: { data: DetailsContent }) {
                 {genre.name}
               </span>
             ))}
+          </div>
+        )}
+
+        {/* Episodes Carousel for TV Shows */}
+        {data.type === "show" && data.seasonData && (
+          <div className="mt-8">
+            {/* Season Selector */}
+            <div className="flex justify-between items-center mb-4">
+              <h4 className="text-lg font-semibold text-white">Episodes</h4>
+              <select
+                value={selectedSeason}
+                onChange={(e) => setSelectedSeason(Number(e.target.value))}
+                className="bg-white/10 text-white rounded-lg px-3 py-1.5 text-sm border border-white/20 focus:outline-none focus:ring-2 focus:ring-white/30"
+              >
+                {data.seasonData.seasons.map((season) => (
+                  <option key={season.id} value={season.season_number}>
+                    Season {season.season_number}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Episodes Carousel */}
+            <div className="relative">
+              {/* Left scroll button */}
+              <div className="absolute left-0 top-1/2 transform -translate-y-1/2 z-10 px-4 hidden lg:block">
+                <button
+                  type="button"
+                  className="p-2 bg-black/80 hover:bg-video-context-hoverColor transition-colors rounded-full border border-video-context-border backdrop-blur-sm"
+                  onClick={() => handleScroll("left")}
+                >
+                  <Icon icon={Icons.CHEVRON_LEFT} className="text-white/80" />
+                </button>
+              </div>
+
+              <div
+                ref={carouselRef}
+                className="flex overflow-x-auto space-x-4 pb-4 pt-2 lg:px-12 scrollbar-hide"
+                style={{
+                  scrollbarWidth: "none",
+                  msOverflowStyle: "none",
+                }}
+              >
+                {currentSeasonEpisodes?.map((episode) => (
+                  <div
+                    key={episode.id}
+                    className="flex-shrink-0 w-64 rounded-lg overflow-hidden transition-all duration-200 relative cursor-pointer hover:scale-95"
+                  >
+                    {/* Thumbnail */}
+                    <div className="relative aspect-video w-full bg-video-context-hoverColor">
+                      {episode.still_path ? (
+                        <img
+                          src={`https://image.tmdb.org/t/p/w300${episode.still_path}`}
+                          alt={episode.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-black bg-opacity-50">
+                          <Icon
+                            icon={Icons.FILM}
+                            className="text-video-context-type-main opacity-50 text-3xl"
+                          />
+                        </div>
+                      )}
+
+                      {/* Episode Number Badge */}
+                      <div className="absolute top-2 left-2">
+                        <span className="p-0.5 px-2 rounded inline bg-video-context-hoverColor bg-opacity-80 text-video-context-type-main text-sm">
+                          E{episode.episode_number}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Content */}
+                    <div className="p-3">
+                      <h3 className="font-bold text-white line-clamp-1">
+                        {episode.name}
+                      </h3>
+                      {episode.overview && (
+                        <p className="text-sm text-white/80 mt-1.5 line-clamp-2">
+                          {episode.overview}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Right scroll button */}
+              <div className="absolute right-0 top-1/2 transform -translate-y-1/2 z-10 px-4 hidden lg:block">
+                <button
+                  type="button"
+                  className="p-2 bg-black/80 hover:bg-video-context-hoverColor transition-colors rounded-full border border-video-context-border backdrop-blur-sm"
+                  onClick={() => handleScroll("right")}
+                >
+                  <Icon icon={Icons.CHEVRON_RIGHT} className="text-white/80" />
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>
@@ -312,41 +452,39 @@ export function DetailsModal(props: {
         <html data-no-scroll />
       </Helmet>
       <div className="flex absolute inset-0 items-center justify-center">
-        <div className="relative w-full max-w-3xl mx-4">
-          <Flare.Base
-            className={classNames(
-              "group -m-[0.705em] rounded-3xl bg-background-main transition-colors duration-300 focus:relative focus:z-10",
-              "w-full bg-mediaCard-hoverBackground bg-opacity-60 backdrop-filter backdrop-blur-lg shadow-lg overflow-hidden",
-            )}
-          >
-            <div className="transition-transform duration-300 overflow-y-scroll max-h-[90dvh] scrollbar-none">
-              <Flare.Light
-                flareSize={300}
-                cssColorVar="--colors-mediaCard-hoverAccent"
-                backgroundClass="bg-mediaCard-hoverBackground duration-100"
-                className="rounded-3xl bg-background-main group-hover:opacity-100"
-              />
-              <Flare.Child className="pointer-events-auto relative">
-                <div className="absolute right-4 top-4 z-10">
-                  <button
-                    type="button"
-                    className="text-s font-semibold text-type-secondary hover:text-white transition-transform hover:scale-95"
-                    onClick={modal.hide}
-                  >
-                    <IconPatch icon={Icons.X} />
-                  </button>
-                </div>
-                <div className="pt-12">
-                  {props.isLoading || !props.data ? (
-                    <DetailsSkeleton />
-                  ) : (
-                    <DetailsContent data={props.data} />
-                  )}
-                </div>
-              </Flare.Child>
-            </div>
-          </Flare.Base>
-        </div>
+        <Flare.Base
+          className={classNames(
+            "group -m-[0.705em] rounded-3xl bg-background-main transition-colors duration-300 focus:relative focus:z-10",
+            "w-full max-w-[90%] mx-4 bg-mediaCard-hoverBackground bg-opacity-60 backdrop-filter backdrop-blur-lg shadow-lg overflow-hidden",
+          )}
+        >
+          <div className="transition-transform duration-300 overflow-y-scroll max-h-[90dvh] scrollbar-none">
+            <Flare.Light
+              flareSize={300}
+              cssColorVar="--colors-mediaCard-hoverAccent"
+              backgroundClass="bg-mediaCard-hoverBackground duration-100"
+              className="rounded-3xl bg-background-main group-hover:opacity-100"
+            />
+            <Flare.Child className="pointer-events-auto relative">
+              <div className="absolute right-4 top-4 z-10">
+                <button
+                  type="button"
+                  className="text-s font-semibold text-type-secondary hover:text-white transition-transform hover:scale-95"
+                  onClick={modal.hide}
+                >
+                  <IconPatch icon={Icons.X} />
+                </button>
+              </div>
+              <div className="pt-12">
+                {props.isLoading || !props.data ? (
+                  <DetailsSkeleton />
+                ) : (
+                  <DetailsContent data={props.data} />
+                )}
+              </div>
+            </Flare.Child>
+          </div>
+        </Flare.Base>
       </div>
     </OverlayPortal>
   );
