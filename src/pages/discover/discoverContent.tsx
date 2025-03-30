@@ -342,9 +342,20 @@ export function DiscoverContent() {
           actors: movieDetails.credits?.cast
             ?.slice(0, 5)
             .map((actor) => actor.name),
+          type: "movie",
         });
       } else {
-        const showDetails = details as TMDBShowData;
+        const showDetails = details as TMDBShowData & {
+          episodes: Array<{
+            id: number;
+            name: string;
+            episode_number: number;
+            overview: string;
+            still_path: string | null;
+            air_date: string;
+            season_number: number;
+          }>;
+        };
         setDetailsData({
           title: showDetails.name,
           overview: showDetails.overview,
@@ -365,6 +376,11 @@ export function DiscoverContent() {
           actors: showDetails.credits?.cast
             ?.slice(0, 5)
             .map((actor) => actor.name),
+          type: "show",
+          seasonData: {
+            seasons: showDetails.seasons,
+            episodes: showDetails.episodes,
+          },
         });
       }
     } catch (err) {

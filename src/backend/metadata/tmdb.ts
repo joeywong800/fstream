@@ -264,7 +264,7 @@ type MediaDetailReturn<T extends TMDBContentTypes> =
       ? TMDBShowData
       : never;
 
-export function getMediaDetails<
+export async function getMediaDetails<
   T extends TMDBContentTypes,
   TReturn = MediaDetailReturn<T>,
 >(id: string, type: T): Promise<TReturn> {
@@ -274,9 +274,33 @@ export function getMediaDetails<
     });
   }
   if (type === TMDBContentTypes.TV) {
-    return get<TReturn>(`/tv/${id}`, {
+    const showData = await get<TReturn>(`/tv/${id}`, {
       append_to_response: "external_ids,credits,content_ratings",
     });
+
+    // Fetch episodes for each season
+    const showDetails = showData as TMDBShowData;
+    const episodePromises = showDetails.seasons.map(async (season) => {
+      const seasonData = await get<TMDBSeason>(
+        `/tv/${id}/season/${season.season_number}`,
+      );
+      return seasonData.episodes.map((episode) => ({
+        id: episode.id,
+        name: episode.name,
+        episode_number: episode.episode_number,
+        overview: episode.overview,
+        still_path: episode.still_path,
+        air_date: episode.air_date,
+        season_number: season.season_number,
+      }));
+    });
+
+    const allEpisodes = (await Promise.all(episodePromises)).flat();
+
+    return {
+      ...showData,
+      episodes: allEpisodes,
+    } as TReturn;
   }
   throw new Error("Invalid media type");
 }
