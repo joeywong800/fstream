@@ -100,6 +100,7 @@ export function HomePage() {
             .map((actor) => actor.name),
           type: "movie",
           id: movieDetails.id,
+          imdbId: movieDetails.external_ids?.imdb_id,
         });
       } else {
         const showDetails = details as TMDBShowData & {
@@ -135,6 +136,7 @@ export function HomePage() {
             .map((actor) => actor.name),
           type: "show",
           id: showDetails.id,
+          imdbId: showDetails.external_ids?.imdb_id,
           seasonData: {
             seasons: showDetails.seasons,
             episodes: showDetails.episodes,

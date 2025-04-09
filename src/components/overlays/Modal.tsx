@@ -180,6 +180,7 @@ interface DetailsContent {
   id?: number;
   episodes?: number;
   seasons?: number;
+  imdbId?: string;
   seasonData?: {
     seasons: Array<{
       id: number;
@@ -384,6 +385,32 @@ function DetailsContent({ data }: { data: DetailsContent }) {
                     </div>
                     <div className="text-white/60 text-[10px] text-right">
                       {formatVoteCount(data.voteCount)} votes
+                    </div>
+
+                    {/* External Links */}
+                    <div className="flex gap-3 mt-2">
+                      {data.id && (
+                        <a
+                          href={`https://www.themoviedb.org/${data.type === "show" ? "tv" : "movie"}/${data.id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="w-8 h-8 rounded-full bg-[#0d253f] flex items-center justify-center transition-transform hover:scale-110"
+                          title="View on TMDB"
+                        >
+                          <Icon icon={Icons.TMDB} className="text-white" />
+                        </a>
+                      )}
+                      {data.imdbId && (
+                        <a
+                          href={`https://www.imdb.com/title/${data.imdbId}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="w-8 h-8 rounded-full bg-yellow-500 flex items-center justify-center transition-transform hover:scale-110"
+                          title="View on IMDB"
+                        >
+                          <Icon icon={Icons.IMDB} className="text-black" />
+                        </a>
+                      )}
                     </div>
                   </div>
                 )}
