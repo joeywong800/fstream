@@ -343,6 +343,7 @@ export function DiscoverContent() {
             ?.slice(0, 5)
             .map((actor) => actor.name),
           type: "movie",
+          id: movieDetails.id,
         });
       } else {
         const showDetails = details as TMDBShowData & {
@@ -377,6 +378,7 @@ export function DiscoverContent() {
             ?.slice(0, 5)
             .map((actor) => actor.name),
           type: "show",
+          id: showDetails.id,
           seasonData: {
             seasons: showDetails.seasons,
             episodes: showDetails.episodes,

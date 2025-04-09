@@ -1,6 +1,7 @@
 import classNames from "classnames";
 import { ReactNode, useCallback, useEffect, useRef, useState } from "react";
 import { Helmet } from "react-helmet-async";
+import { Link } from "react-router-dom";
 
 import { IconPatch } from "@/components/buttons/IconPatch";
 import { Icon, Icons } from "@/components/Icon";
@@ -163,13 +164,11 @@ function DetailsSkeleton() {
 }
 
 interface DetailsContent {
-  backdrop?: string;
   title: string;
   overview?: string;
-  genres?: { id: number; name: string }[];
+  backdrop?: string;
   runtime?: number | null;
-  episodes?: number;
-  seasons?: number;
+  genres?: Array<{ id: number; name: string }>;
   language?: string;
   voteAverage?: number;
   voteCount?: number;
@@ -178,20 +177,29 @@ interface DetailsContent {
   director?: string;
   actors?: string[];
   type?: "movie" | "show";
+  id?: number;
+  episodes?: number;
+  seasons?: number;
   seasonData?: {
     seasons: Array<{
       id: number;
-      name: string;
       season_number: number;
+      name: string;
+      episode_count: number;
+      overview: string;
+      air_date: string;
+      poster_path: string | null;
     }>;
     episodes: Array<{
       id: number;
       name: string;
-      episode_number: number;
       overview: string;
+      episode_number: number;
+      season_number: number;
       still_path: string | null;
       air_date: string;
-      season_number: number;
+      vote_average: number;
+      vote_count: number;
     }>;
   };
 }
@@ -244,6 +252,19 @@ function DetailsContent({ data }: { data: DetailsContent }) {
   const currentSeasonEpisodes = data.seasonData?.episodes.filter(
     (ep) => ep.season_number === selectedSeason,
   );
+
+  // Function to generate the episode URL
+  const getEpisodeUrl = (episode: any) => {
+    // Find the season ID for the current season
+    const season = data.seasonData?.seasons.find(
+      (s) => s.season_number === selectedSeason,
+    );
+
+    if (!season || !data.id) return "#";
+
+    // Create the URL in the format: /media/tmdb-tv-{showId}-{showName}/{seasonId}/{episodeId}
+    return `/media/tmdb-tv-${data.id}-${data.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}/${season.id}/${episode.id}`;
+  };
 
   return (
     <div className="relative">
@@ -377,8 +398,9 @@ function DetailsContent({ data }: { data: DetailsContent }) {
                 }}
               >
                 {currentSeasonEpisodes?.map((episode) => (
-                  <div
+                  <Link
                     key={episode.id}
+                    to={getEpisodeUrl(episode)}
                     className="flex-shrink-0 w-64 rounded-lg overflow-hidden transition-all duration-200 relative cursor-pointer hover:scale-95"
                   >
                     {/* Thumbnail */}
@@ -417,7 +439,7 @@ function DetailsContent({ data }: { data: DetailsContent }) {
                         </p>
                       )}
                     </div>
-                  </div>
+                  </Link>
                 ))}
               </div>
 
