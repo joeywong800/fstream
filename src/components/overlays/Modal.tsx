@@ -296,15 +296,15 @@ function DetailsContent({ data }: { data: DetailsContent }) {
       <div className="px-6 pb-6 mt-[-30px] flex-grow">
         {/* Title and Genres Row */}
         <div className="flex flex-col sm:flex-row justify-between items-start mb-6">
-          <h3 className="text-2xl font-bold text-white mb-3 sm:mb-0">
+          <h3 className="text-2xl font-bold text-white mb-3 sm:mb-0 z-[999]">
             {data.title}
           </h3>
           {data.genres && data.genres.length > 0 && (
-            <div className="flex flex-wrap gap-2 justify-start sm:justify-end">
+            <div className="flex flex-wrap gap-2 justify-start sm:justify-end z-[999]">
               {data.genres.map((genre) => (
                 <span
                   key={genre.id}
-                  className="text-[10px] px-1.5 py-0.5 rounded-full bg-white/10 text-white/70"
+                  className="text-[11px] px-2 py-0.5 rounded-full bg-white/20 text-white/80"
                 >
                   {genre.name}
                 </span>
@@ -420,7 +420,7 @@ function DetailsContent({ data }: { data: DetailsContent }) {
 
         {/* Episodes Carousel for TV Shows */}
         {data.type === "show" && data.seasonData && (
-          <div className="mt-6">
+          <div className="mt-6 md:mt-0">
             {/* Season Selector */}
             <div className="flex justify-between items-center mb-3">
               <h4 className="text-lg font-semibold text-white">Episodes</h4>
@@ -458,11 +458,14 @@ function DetailsContent({ data }: { data: DetailsContent }) {
                   msOverflowStyle: "none",
                 }}
               >
+                {/* Add padding before the first card */}
+                <div className="flex-shrink-0 w-4" />
+
                 {currentSeasonEpisodes?.map((episode) => (
                   <Link
                     key={episode.id}
                     to={getEpisodeUrl(episode)}
-                    className="flex-shrink-0 w-64 rounded-lg overflow-hidden transition-all duration-200 relative cursor-pointer hover:scale-95"
+                    className="flex-shrink-0 w-64 rounded-lg overflow-hidden transition-all duration-200 relative cursor-pointer hover:scale-95 hover:bg-white/5"
                   >
                     {/* Thumbnail */}
                     <div className="relative aspect-video w-full bg-video-context-hoverColor">
@@ -502,6 +505,9 @@ function DetailsContent({ data }: { data: DetailsContent }) {
                     </div>
                   </Link>
                 ))}
+
+                {/* Add padding after the last card */}
+                <div className="flex-shrink-0 w-4" />
               </div>
 
               {/* Right scroll button */}
@@ -538,7 +544,7 @@ export function DetailsModal(props: {
         <Flare.Base
           className={classNames(
             "group -m-[0.705em] rounded-3xl bg-background-main transition-colors duration-300 focus:relative focus:z-10",
-            "max-h-[800px] max-w-[1200px]",
+            "max-h-[900px] max-w-[1200px]",
             "bg-mediaCard-hoverBackground bg-opacity-60 backdrop-filter backdrop-blur-lg shadow-lg overflow-hidden",
             props.data?.type === "movie"
               ? "h-fit w-[90%] md:w-[70%] lg:w-[50%]"
