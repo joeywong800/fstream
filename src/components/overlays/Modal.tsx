@@ -229,6 +229,14 @@ function DetailsContent({ data }: { data: DetailsContent }) {
     });
   };
 
+  // Function to get color based on rating
+  const getRatingColor = (rating: number) => {
+    if (rating >= 8) return "bg-green-500";
+    if (rating >= 6) return "bg-yellow-500";
+    if (rating >= 4) return "bg-orange-500";
+    return "bg-red-500";
+  };
+
   const [selectedSeason, setSelectedSeason] = useState<number>(1);
   const carouselRef = useRef<HTMLDivElement>(null);
 
@@ -267,9 +275,9 @@ function DetailsContent({ data }: { data: DetailsContent }) {
   };
 
   return (
-    <div className="relative">
-      {/* Backdrop */}
-      <div className="h-64 relative -mt-12">
+    <div className="relative h-full flex flex-col">
+      {/* Backdrop - Even taller */}
+      <div className="h-64 lg:h-80 xl:h-96 relative -mt-12">
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{
@@ -284,84 +292,110 @@ function DetailsContent({ data }: { data: DetailsContent }) {
         />
       </div>
       {/* Content */}
-      <div className="px-6 pb-6 mt-[-30px]">
-        <h3 className="text-2xl font-bold text-white mb-4">{data.title}</h3>
-        {data.overview && (
-          <p className="text-sm text-white/90 mb-6">{data.overview}</p>
-        )}
-        {/* Additional details */}
-        <div className="grid grid-cols-2 gap-2 text-xs mb-6">
-          {data.runtime && (
-            <div className="flex items-center gap-1 text-white/80">
-              <span className="font-medium">Runtime:</span>{" "}
-              {formatRuntime(data.runtime)}
-            </div>
-          )}
-          {data.language && (
-            <div className="flex items-center gap-1 text-white/80">
-              <span className="font-medium">Language:</span>{" "}
-              {data.language.toUpperCase()}
-            </div>
-          )}
-          {data.releaseDate && (
-            <div className="flex items-center gap-1 text-white/80">
-              <span className="font-medium">Release Date:</span>{" "}
-              {formatDate(data.releaseDate)}
-            </div>
-          )}
-          {data.rating && (
-            <div className="flex items-center gap-1 text-white/80">
-              <span className="font-medium">Rating:</span> {data.rating}
-            </div>
-          )}
-          {data.voteAverage !== undefined &&
-            data.voteCount !== undefined &&
-            data.voteCount > 0 && (
-              <div className="flex items-center gap-1 text-white/80">
-                <span className="font-medium">Rating:</span>{" "}
-                {data.voteAverage.toFixed(1)}/10
-                <span className="text-white/60 text-[10px]">
-                  ({formatVoteCount(data.voteCount)})
+      <div className="px-6 pb-6 mt-[-30px] flex-grow">
+        {/* Title and Genres Row */}
+        <div className="flex flex-col sm:flex-row justify-between items-start mb-6">
+          <h3 className="text-2xl font-bold text-white mb-3 sm:mb-0">
+            {data.title}
+          </h3>
+          {data.genres && data.genres.length > 0 && (
+            <div className="flex flex-wrap gap-2 justify-start sm:justify-end">
+              {data.genres.map((genre) => (
+                <span
+                  key={genre.id}
+                  className="text-[10px] px-1.5 py-0.5 rounded-full bg-white/10 text-white/70"
+                >
+                  {genre.name}
                 </span>
-              </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Two Column Layout - Stacked on Mobile */}
+        <div className="grid grid-cols-1 md:grid-cols-3 md:gap-6">
+          {/* Left Column - Description */}
+          <div className="md:col-span-2">
+            {data.overview && (
+              <p className="text-sm text-white/90 mb-6">{data.overview}</p>
             )}
-        </div>
 
-        {/* Director and Cast */}
-        <div className="space-y-4 mb-6">
-          {data.director && (
-            <div className="text-xs">
-              <span className="font-medium text-white/80">Director:</span>{" "}
-              <span className="text-white/70">{data.director}</span>
+            {/* Director and Cast */}
+            <div className="space-y-4 mb-6">
+              {data.director && (
+                <div className="text-xs">
+                  <span className="font-medium text-white/80">Director:</span>{" "}
+                  <span className="text-white/70">{data.director}</span>
+                </div>
+              )}
+              {data.actors && data.actors.length > 0 && (
+                <div className="text-xs">
+                  <span className="font-medium text-white/80">Cast:</span>{" "}
+                  <span className="text-white/70">
+                    {data.actors.join(", ")}
+                  </span>
+                </div>
+              )}
             </div>
-          )}
-          {data.actors && data.actors.length > 0 && (
-            <div className="text-xs">
-              <span className="font-medium text-white/80">Cast:</span>{" "}
-              <span className="text-white/70">{data.actors.join(", ")}</span>
-            </div>
-          )}
-        </div>
-
-        {/* Genres */}
-        {data.genres && data.genres.length > 0 && (
-          <div className="flex flex-wrap gap-2 mb-6">
-            {data.genres.map((genre) => (
-              <span
-                key={genre.id}
-                className="text-[10px] px-1.5 py-0.5 rounded-full bg-white/10 text-white/70"
-              >
-                {genre.name}
-              </span>
-            ))}
           </div>
-        )}
+
+          {/* Right Column - Details */}
+          <div className="md:col-span-1">
+            <div className="space-y-3 text-xs">
+              {data.runtime && (
+                <div className="flex items-center gap-1 text-white/80">
+                  <span className="font-medium">Runtime:</span>{" "}
+                  {formatRuntime(data.runtime)}
+                </div>
+              )}
+              {data.language && (
+                <div className="flex items-center gap-1 text-white/80">
+                  <span className="font-medium">Language:</span>{" "}
+                  {data.language.toUpperCase()}
+                </div>
+              )}
+              {data.releaseDate && (
+                <div className="flex items-center gap-1 text-white/80">
+                  <span className="font-medium">Release Date:</span>{" "}
+                  {formatDate(data.releaseDate)}
+                </div>
+              )}
+              {data.rating && (
+                <div className="flex items-center gap-1 text-white/80">
+                  <span className="font-medium">Rating:</span> {data.rating}
+                </div>
+              )}
+              {data.voteAverage !== undefined &&
+                data.voteCount !== undefined &&
+                data.voteCount > 0 && (
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-1 text-white/80">
+                      <span className="font-medium">Rating:</span>{" "}
+                      <span className="text-white/90">
+                        {data.voteAverage.toFixed(1)}/10
+                      </span>
+                    </div>
+                    {/* Rating Progress Bar */}
+                    <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full ${getRatingColor(data.voteAverage)} transition-all duration-500`}
+                        style={{ width: `${(data.voteAverage / 10) * 100}%` }}
+                      />
+                    </div>
+                    <div className="text-white/60 text-[10px] text-right">
+                      {formatVoteCount(data.voteCount)} votes
+                    </div>
+                  </div>
+                )}
+            </div>
+          </div>
+        </div>
 
         {/* Episodes Carousel for TV Shows */}
         {data.type === "show" && data.seasonData && (
-          <div className="mt-8">
+          <div className="mt-6">
             {/* Season Selector */}
-            <div className="flex justify-between items-center mb-4">
+            <div className="flex justify-between items-center mb-3">
               <h4 className="text-lg font-semibold text-white">Episodes</h4>
               <select
                 value={selectedSeason}
@@ -477,17 +511,21 @@ export function DetailsModal(props: {
         <Flare.Base
           className={classNames(
             "group -m-[0.705em] rounded-3xl bg-background-main transition-colors duration-300 focus:relative focus:z-10",
-            "w-full max-w-[90%] mx-4 bg-mediaCard-hoverBackground bg-opacity-60 backdrop-filter backdrop-blur-lg shadow-lg overflow-hidden",
+            "max-h-[800px] max-w-[1200px]",
+            "bg-mediaCard-hoverBackground bg-opacity-60 backdrop-filter backdrop-blur-lg shadow-lg overflow-hidden",
+            props.data?.type === "movie"
+              ? "h-fit w-[90%] md:w-[70%] lg:w-[50%]"
+              : "h-[90%] w-[90%] md:w-[70%] lg:w-[60%]", // that seems to work lmao
           )}
         >
-          <div className="transition-transform duration-300 overflow-y-scroll max-h-[90dvh] scrollbar-none">
+          <div className="transition-transform duration-300 h-full">
             <Flare.Light
               flareSize={300}
               cssColorVar="--colors-mediaCard-hoverAccent"
               backgroundClass="bg-mediaCard-hoverBackground duration-100"
               className="rounded-3xl bg-background-main group-hover:opacity-100"
             />
-            <Flare.Child className="pointer-events-auto relative">
+            <Flare.Child className="pointer-events-auto relative h-full overflow-y-auto scrollbar-none">
               <div className="absolute right-4 top-4 z-10">
                 <button
                   type="button"
