@@ -427,6 +427,11 @@ export function MediaCard(props: MediaCardProps) {
     setTimeoutId(id);
   };
 
+  const handleContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setOverlayVisible(true);
+  };
+
   const shouldShowHoverInfo =
     showHoverInfo &&
     !overlayVisible &&
@@ -579,6 +584,7 @@ export function MediaCard(props: MediaCardProps) {
           )}
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
+          onContextMenu={handleContextMenu}
           onClick={(e) => {
             if (overlayVisible || e.defaultPrevented) {
               e.preventDefault();
@@ -605,6 +611,7 @@ export function MediaCard(props: MediaCardProps) {
           )}
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
+          onContextMenu={handleContextMenu}
         >
           <MediaCardContent
             {...props}
