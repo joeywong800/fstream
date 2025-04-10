@@ -567,7 +567,17 @@ export function MediaCard(props: MediaCardProps) {
 
   if (!canLink)
     return (
-      <span className="relative">
+      <span
+        className="relative"
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        onContextMenu={handleContextMenu}
+        onClick={(e) => {
+          if (overlayVisible || e.defaultPrevented) {
+            e.preventDefault();
+          }
+        }}
+      >
         {content}{" "}
         <InfoPopout media={hoverMedia} visible={shouldShowHoverInfo} />
       </span>
