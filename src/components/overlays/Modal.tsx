@@ -547,7 +547,7 @@ export function DetailsModal(props: {
             "max-h-[900px] max-w-[1200px]",
             "bg-mediaCard-hoverBackground bg-opacity-60 backdrop-filter backdrop-blur-lg shadow-lg overflow-hidden",
             props.data?.type === "movie"
-              ? "h-fit w-[90%] md:w-[70%] lg:w-[50%]"
+              ? "h-[90%] md:h-fit w-[90%] md:w-[70%] lg:w-[50%]"
               : "h-[90%] w-[90%] md:w-[70%] lg:w-[60%]", // that seems to work lmao
           )}
         >
