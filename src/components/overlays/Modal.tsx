@@ -385,12 +385,28 @@ function DetailsContent({ data }: { data: DetailsContent }) {
       {/* Content */}
       <div className="px-6 pb-6 mt-[-30px] flex-grow">
         {/* Title and Genres Row */}
-        <div className="flex flex-col sm:flex-row justify-between items-start mb-6">
-          <h3 className="text-2xl font-bold text-white mb-3 sm:mb-0 z-[999]">
-            {data.title}
-          </h3>
+        <div className="flex flex-col sm:flex-row justify-between items-center mb-6">
+          <div className="flex items-center gap-4">
+            <h3 className="text-2xl font-bold text-white mb-3 sm:mb-0 z-[999]">
+              {data.title}
+            </h3>
+            {data.type === "movie" && (
+              <button
+                type="button"
+                onClick={() =>
+                  window.location.assign(
+                    `/media/tmdb-movie-${data.id}-${data.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
+                  )
+                }
+                className="p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors"
+                title="Play Movie"
+              >
+                <Icon icon={Icons.PLAY} className="text-white" />
+              </button>
+            )}
+          </div>
           {data.genres && data.genres.length > 0 && (
-            <div className="flex flex-wrap gap-2 justify-start sm:justify-end z-[999]">
+            <div className="flex flex-wrap gap-2 justify-start sm:justify-end z-[999] items-center">
               {data.genres.map((genre) => (
                 <span
                   key={genre.id}
