@@ -9,7 +9,9 @@ import { OverlayPortal } from "@/components/overlays/OverlayDisplay";
 import { Flare } from "@/components/utils/Flare";
 import { Heading2 } from "@/components/utils/Text";
 import { useQueryParam } from "@/hooks/useQueryParams";
+import { useBookmarkStore } from "@/stores/bookmarks";
 import { scrapeIMDb } from "@/utils/imdbScraper";
+import { MediaItem } from "@/utils/mediaTypes";
 
 export function useModal(id: string) {
   const [currentModal, setCurrentModal] = useQueryParam("m");
@@ -213,6 +215,39 @@ function DetailsContent({ data }: { data: DetailsContent }) {
   const [isPaused, setIsPaused] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
+  const addBookmark = useBookmarkStore((s) => s.addBookmark);
+  const removeBookmark = useBookmarkStore((s) => s.removeBookmark);
+  const bookmarks = useBookmarkStore((s) => s.bookmarks);
+  const isBookmarked = !!bookmarks[data.id?.toString() ?? ""];
+
+  const toggleBookmark = useCallback(() => {
+    if (!data.id) return;
+    if (isBookmarked) {
+      removeBookmark(data.id.toString());
+    } else {
+      addBookmark({
+        tmdbId: data.id.toString(),
+        type: data.type ?? "movie",
+        title: data.title,
+        releaseYear: data.releaseDate
+          ? new Date(data.releaseDate).getFullYear()
+          : 0,
+        poster: data.backdrop,
+      });
+    }
+  }, [data, isBookmarked, addBookmark, removeBookmark]);
+
+  // Create a MediaItem object for the bookmark button
+  const mediaItem: MediaItem = {
+    id: data.id?.toString() ?? "",
+    title: data.title,
+    year: data.releaseDate
+      ? new Date(data.releaseDate).getFullYear()
+      : undefined,
+    type: data.type ?? "movie",
+    poster: data.backdrop,
+  };
+
   const toggleMute = () => {
     if (videoRef.current) {
       videoRef.current.muted = !videoRef.current.muted;
@@ -390,20 +425,33 @@ function DetailsContent({ data }: { data: DetailsContent }) {
             <h3 className="text-2xl font-bold text-white mb-3 sm:mb-0 z-[999]">
               {data.title}
             </h3>
-            {data.type === "movie" && (
+            <div className="flex gap-2">
+              {data.type === "movie" && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    window.location.assign(
+                      `/media/tmdb-movie-${data.id}-${data.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
+                    )
+                  }
+                  className="p-2 hover:scale-95 bg-white/10 hover:bg-white/20 rounded-full transition-colors"
+                  title="Play Movie"
+                >
+                  <Icon icon={Icons.PLAY} className="text-white" />
+                </button>
+              )}
               <button
                 type="button"
-                onClick={() =>
-                  window.location.assign(
-                    `/media/tmdb-movie-${data.id}-${data.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
-                  )
-                }
-                className="p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors"
-                title="Play Movie"
+                onClick={toggleBookmark}
+                className="p-2 hover:scale-95 transition-transform"
+                title={isBookmarked ? "Remove Bookmark" : "Add Bookmark"}
               >
-                <Icon icon={Icons.PLAY} className="text-white" />
+                <Icon
+                  icon={isBookmarked ? Icons.BOOKMARK : Icons.BOOKMARK_OUTLINE}
+                  className="text-white"
+                />
               </button>
-            )}
+            </div>
           </div>
           {data.genres && data.genres.length > 0 && (
             <div className="flex flex-wrap gap-2 justify-start sm:justify-end z-[999] items-center">
