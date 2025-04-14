@@ -9,6 +9,7 @@ import { OverlayPortal } from "@/components/overlays/OverlayDisplay";
 import { Flare } from "@/components/utils/Flare";
 import { Heading2 } from "@/components/utils/Text";
 import { useQueryParam } from "@/hooks/useQueryParams";
+import { scrapeIMDb } from "@/utils/imdbScraper";
 
 export function useModal(id: string) {
   const [currentModal, setCurrentModal] = useQueryParam("m");
@@ -206,6 +207,49 @@ interface DetailsContent {
 }
 
 function DetailsContent({ data }: { data: DetailsContent }) {
+  const [imdbData, setImdbData] = useState<any>(null);
+  const [, setIsLoadingImdb] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
+  const [isPaused, setIsPaused] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  const toggleMute = () => {
+    if (videoRef.current) {
+      videoRef.current.muted = !videoRef.current.muted;
+      setIsMuted(!isMuted);
+    }
+  };
+
+  const togglePlay = () => {
+    if (videoRef.current) {
+      if (videoRef.current.paused) {
+        videoRef.current.play();
+        setIsPaused(false);
+      } else {
+        videoRef.current.pause();
+        setIsPaused(true);
+      }
+    }
+  };
+
+  useEffect(() => {
+    const fetchImdbData = async () => {
+      if (!data.imdbId) return;
+
+      setIsLoadingImdb(true);
+      try {
+        const imdbMetadata = await scrapeIMDb(data.imdbId);
+        setImdbData(imdbMetadata);
+      } catch (error) {
+        console.error("Failed to fetch IMDb data:", error);
+      } finally {
+        setIsLoadingImdb(false);
+      }
+    };
+
+    fetchImdbData();
+  }, [data.imdbId]);
+
   const formatRuntime = (minutes?: number | null) => {
     if (!minutes) return null;
     const hours = Math.floor(minutes / 60);
@@ -279,18 +323,64 @@ function DetailsContent({ data }: { data: DetailsContent }) {
     <div className="relative h-full flex flex-col">
       {/* Backdrop - Even taller */}
       <div className="h-64 lg:h-80 xl:h-96 relative -mt-12">
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{
-            backgroundImage: data.backdrop
-              ? `url(${data.backdrop})`
-              : undefined,
-            maskImage:
-              "linear-gradient(to top, rgba(0, 0, 0, 0), rgba(0, 0, 0, 1) 60px)",
-            WebkitMaskImage:
-              "linear-gradient(to top, rgba(0, 0, 0, 0), rgba(0, 0, 0, 1) 60px)",
-          }}
-        />
+        {imdbData?.trailer_url ? (
+          <div
+            className="absolute inset-0"
+            style={{
+              maskImage:
+                "linear-gradient(to top, rgba(0, 0, 0, 0), rgba(0, 0, 0, 1) 60px)",
+              WebkitMaskImage:
+                "linear-gradient(to top, rgba(0, 0, 0, 0), rgba(0, 0, 0, 1) 60px)",
+            }}
+          >
+            <video
+              ref={videoRef}
+              className="absolute inset-0 w-full h-full object-cover cursor-pointer"
+              autoPlay
+              loop
+              muted
+              playsInline
+              poster={data.backdrop}
+              onClick={togglePlay}
+            >
+              <source src={imdbData.trailer_url} type="video/mp4" />
+            </video>
+            <button
+              type="button"
+              onClick={toggleMute}
+              className="absolute top-4 left-4 z-10 p-2 bg-black/50 hover:bg-black/70 rounded-full transition-colors"
+              title={isMuted ? "Unmute" : "Mute"}
+            >
+              <Icon
+                icon={isMuted ? Icons.VOLUME_X : Icons.VOLUME}
+                className="text-white"
+              />
+            </button>
+            {isPaused && (
+              <button
+                type="button"
+                onClick={togglePlay}
+                className="absolute inset-0 flex items-center justify-center z-10"
+                title="Play"
+              >
+                <Icon icon={Icons.PLAY} className="text-white text-4xl" />
+              </button>
+            )}
+          </div>
+        ) : (
+          <div
+            className="absolute inset-0 bg-cover bg-center"
+            style={{
+              backgroundImage: data.backdrop
+                ? `url(${data.backdrop})`
+                : undefined,
+              maskImage:
+                "linear-gradient(to top, rgba(0, 0, 0, 0), rgba(0, 0, 0, 1) 60px)",
+              WebkitMaskImage:
+                "linear-gradient(to top, rgba(0, 0, 0, 0), rgba(0, 0, 0, 1) 60px)",
+            }}
+          />
+        )}
       </div>
       {/* Content */}
       <div className="px-6 pb-6 mt-[-30px] flex-grow">
@@ -373,18 +463,22 @@ function DetailsContent({ data }: { data: DetailsContent }) {
                     <div className="flex items-center gap-1 text-white/80">
                       <span className="font-medium">Rating:</span>{" "}
                       <span className="text-white/90">
-                        {data.voteAverage.toFixed(1)}/10
+                        {imdbData?.imdb_rating
+                          ? `${imdbData.imdb_rating.toFixed(1)}/10 (IMDb)`
+                          : `${data.voteAverage.toFixed(1)}/10 (TMDB)`}
                       </span>
                     </div>
                     {/* Rating Progress Bar */}
                     <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
                       <div
-                        className={`h-full ${getRatingColor(data.voteAverage)} transition-all duration-500`}
-                        style={{ width: `${(data.voteAverage / 10) * 100}%` }}
+                        className={`h-full ${getRatingColor(imdbData?.imdb_rating || data.voteAverage)} transition-all duration-500`}
+                        style={{
+                          width: `${((imdbData?.imdb_rating || data.voteAverage) / 10) * 100}%`,
+                        }}
                       />
                     </div>
                     <div className="text-white/60 text-[10px] text-right">
-                      {formatVoteCount(data.voteCount)} votes
+                      {formatVoteCount(imdbData?.votes || data.voteCount)} votes
                     </div>
 
                     {/* External Links */}
