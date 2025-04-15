@@ -11,7 +11,6 @@ import { Heading2 } from "@/components/utils/Text";
 import { useQueryParam } from "@/hooks/useQueryParams";
 import { useBookmarkStore } from "@/stores/bookmarks";
 import { scrapeIMDb } from "@/utils/imdbScraper";
-import { MediaItem } from "@/utils/mediaTypes";
 
 export function useModal(id: string) {
   const [currentModal, setCurrentModal] = useQueryParam("m");
@@ -688,6 +687,12 @@ export function DetailsModal(props: {
   minimal?: boolean;
 }) {
   const modal = useModal(props.id);
+
+  useEffect(() => {
+    if (modal.isShown && !props.data && !props.isLoading) {
+      modal.hide();
+    }
+  }, [modal, props.data, props.isLoading]);
 
   return (
     <OverlayPortal darken close={modal.hide} show={modal.isShown}>
