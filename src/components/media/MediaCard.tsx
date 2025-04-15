@@ -1,7 +1,7 @@
 // I'm sorry this is so confusing 😭
 
 import classNames from "classnames";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { useCopyToClipboard } from "react-use";
@@ -26,7 +26,6 @@ import { MediaBookmarkButton } from "./MediaBookmark";
 import { Button } from "../buttons/Button";
 import { IconPatch } from "../buttons/IconPatch";
 import { Icon, Icons } from "../Icon";
-import { InfoPopout } from "./InfoPopout";
 import { DetailsModal, useModal } from "../overlays/Modal";
 
 export interface MediaCardProps {
@@ -373,24 +372,11 @@ export function MediaCard(props: MediaCardProps) {
   const { media, onShowDetails } = props;
   const [overlayVisible, setOverlayVisible] = useState(false);
   const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
-  const [showHoverInfo, setShowHoverInfo] = useState(false);
   const hoverTimer = useRef<NodeJS.Timeout>();
   const [isHoveringCard, setIsHoveringCard] = useState(false);
-  const [isHoveringInfo, setIsHoveringInfo] = useState(false);
-  const [isBigScreen, setIsBigScreen] = useState(false);
-  const enablePopDetails = usePreferencesStore((s) => s.enablePopDetails);
   const [detailsData, setDetailsData] = useState<any>();
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
   const detailsModal = useModal("details");
-
-  useEffect(() => {
-    const checkScreenSize = () => {
-      setIsBigScreen(window.innerWidth >= 768); // md breakpoint
-    };
-    checkScreenSize();
-    window.addEventListener("resize", checkScreenSize);
-    return () => window.removeEventListener("resize", checkScreenSize);
-  }, []);
 
   const handleMouseEnter = () => {
     setIsHoveringCard(true);
@@ -403,22 +389,12 @@ export function MediaCard(props: MediaCardProps) {
     if (hoverTimer.current) {
       clearTimeout(hoverTimer.current);
     }
-
-    if (isBigScreen && !overlayVisible) {
-      hoverTimer.current = setTimeout(() => {
-        setShowHoverInfo(true);
-      }, 200); // 0.2 second delay
-    }
   };
 
   const handleMouseLeave = () => {
     setIsHoveringCard(false);
     if (hoverTimer.current) {
       clearTimeout(hoverTimer.current);
-    }
-
-    if (!isHoveringInfo) {
-      setShowHoverInfo(false);
     }
 
     const id = setTimeout(() => {
@@ -431,13 +407,6 @@ export function MediaCard(props: MediaCardProps) {
     e.preventDefault();
     setOverlayVisible(true);
   };
-
-  const shouldShowHoverInfo =
-    showHoverInfo &&
-    !overlayVisible &&
-    isBigScreen &&
-    enablePopDetails &&
-    !props.closable;
 
   const isReleased = useCallback(
     () => checkReleased(props.media),
@@ -458,17 +427,6 @@ export function MediaCard(props: MediaCardProps) {
       )}/${encodeURIComponent(props.series.episodeId)}`;
     }
   }
-
-  const hoverMedia = {
-    ...props.media,
-    onHoverInfoEnter: () => setIsHoveringInfo(true),
-    onHoverInfoLeave: () => {
-      setIsHoveringInfo(false);
-      if (!isHoveringCard && !overlayVisible) {
-        setShowHoverInfo(false);
-      }
-    },
-  };
 
   const handleShowDetails = useCallback(async () => {
     if (onShowDetails) {
@@ -577,7 +535,6 @@ export function MediaCard(props: MediaCardProps) {
         }}
       >
         {content}{" "}
-        <InfoPopout media={hoverMedia} visible={shouldShowHoverInfo} />
       </span>
     );
   return (
@@ -632,10 +589,6 @@ export function MediaCard(props: MediaCardProps) {
             onShowDetails={handleShowDetails}
           />
         </div>
-      )}
-
-      {shouldShowHoverInfo && (
-        <InfoPopout media={hoverMedia} visible={shouldShowHoverInfo} />
       )}
     </div>
   );

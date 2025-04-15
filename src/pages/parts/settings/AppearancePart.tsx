@@ -154,8 +154,8 @@ export function AppearancePart(props: {
   enableDiscover: boolean;
   setEnableDiscover: (v: boolean) => void;
 
-  enablePopDetails: boolean;
-  setEnablePopDetails: (v: boolean) => void;
+  enableDetailsModal: boolean;
+  setEnableDetailsModal: (v: boolean) => void;
 }) {
   const { t } = useTranslation();
 
@@ -191,10 +191,12 @@ export function AppearancePart(props: {
               {t("settings.appearance.options.hoverDescription")}
             </p>
             <div
-              onClick={() => props.setEnablePopDetails(!props.enablePopDetails)}
+              onClick={() =>
+                props.setEnableDetailsModal(!props.enableDetailsModal)
+              }
               className="opacity-50 md:opacity-100 bg-dropdown-background hover:bg-dropdown-hoverBackground select-none my-4 cursor-pointer space-x-3 flex items-center max-w-[25rem] py-3 px-4 rounded-lg"
             >
-              <Toggle enabled={props.enablePopDetails} />
+              <Toggle enabled={props.enableDetailsModal} />
               <p className="flex-1 text-white font-bold">
                 {t("settings.appearance.options.hoverLabel")}
               </p>
