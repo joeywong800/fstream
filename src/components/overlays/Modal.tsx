@@ -208,7 +208,13 @@ interface DetailsContent {
   };
 }
 
-function DetailsContent({ data }: { data: DetailsContent }) {
+function DetailsContent({
+  data,
+  minimal = false,
+}: {
+  data: DetailsContent;
+  minimal?: boolean;
+}) {
   const [imdbData, setImdbData] = useState<any>(null);
   const [, setIsLoadingImdb] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
@@ -426,7 +432,7 @@ function DetailsContent({ data }: { data: DetailsContent }) {
               {data.title}
             </h3>
             <div className="flex gap-2">
-              {data.type === "movie" && (
+              {data.type === "movie" && !minimal && (
                 <button
                   type="button"
                   onClick={() =>
@@ -577,7 +583,7 @@ function DetailsContent({ data }: { data: DetailsContent }) {
         </div>
 
         {/* Episodes Carousel for TV Shows */}
-        {data.type === "show" && data.seasonData && (
+        {data.type === "show" && data.seasonData && !minimal && (
           <div className="mt-6 md:mt-0">
             {/* Season Selector */}
             <div className="flex justify-between items-center mb-3">
@@ -690,6 +696,7 @@ export function DetailsModal(props: {
   id: string;
   data?: DetailsContent;
   isLoading?: boolean;
+  minimal?: boolean;
 }) {
   const modal = useModal(props.id);
 
@@ -704,7 +711,7 @@ export function DetailsModal(props: {
             "group -m-[0.705em] rounded-3xl bg-background-main transition-colors duration-300 focus:relative focus:z-10",
             "max-h-[900px] max-w-[1200px]",
             "bg-mediaCard-hoverBackground bg-opacity-60 backdrop-filter backdrop-blur-lg shadow-lg overflow-hidden",
-            props.data?.type === "movie"
+            props.data?.type === "movie" || props.minimal
               ? "h-[90%] lg:h-fit w-[90%] md:w-[70%] lg:w-[50%]"
               : "h-[90%] w-[90%] md:w-[70%] lg:w-[60%]", // that seems to work lmao
           )}
@@ -730,7 +737,7 @@ export function DetailsModal(props: {
                 {props.isLoading || !props.data ? (
                   <DetailsSkeleton />
                 ) : (
-                  <DetailsContent data={props.data} />
+                  <DetailsContent data={props.data} minimal={props.minimal} />
                 )}
               </div>
             </Flare.Child>

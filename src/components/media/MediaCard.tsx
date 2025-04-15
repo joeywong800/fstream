@@ -555,13 +555,11 @@ export function MediaCard(props: MediaCardProps) {
         isHoveringCard={isHoveringCard}
         onShowDetails={handleShowDetails}
       />
-      {!onShowDetails && (
-        <DetailsModal
-          id="details"
-          data={detailsData}
-          isLoading={isLoadingDetails}
-        />
-      )}
+      <DetailsModal
+        id="details"
+        data={detailsData}
+        isLoading={isLoadingDetails}
+      />
     </>
   );
 
