@@ -107,7 +107,7 @@ export function InfoButton() {
       <VideoPlayerButton
         icon={Icons.CIRCLE_QUESTION}
         iconSizeClass="text-base"
-        className="p-2 !-mr-1"
+        className="p-2 !-mr-5"
         onClick={handleClick}
       />
       <DetailsModal

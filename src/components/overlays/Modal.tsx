@@ -243,17 +243,6 @@ function DetailsContent({
     }
   }, [data, isBookmarked, addBookmark, removeBookmark]);
 
-  // Create a MediaItem object for the bookmark button
-  const mediaItem: MediaItem = {
-    id: data.id?.toString() ?? "",
-    title: data.title,
-    year: data.releaseDate
-      ? new Date(data.releaseDate).getFullYear()
-      : undefined,
-    type: data.type ?? "movie",
-    poster: data.backdrop,
-  };
-
   const toggleMute = () => {
     if (videoRef.current) {
       videoRef.current.muted = !videoRef.current.muted;
@@ -428,10 +417,10 @@ function DetailsContent({
         {/* Title and Genres Row */}
         <div className="flex flex-col sm:flex-row justify-between items-start mb-6">
           <div className="flex items-center gap-4">
-            <h3 className="text-2xl font-bold text-white mb-3 sm:mb-0 z-[999]">
+            <h3 className="text-2xl font-bold text-white z-[999]">
               {data.title}
             </h3>
-            <div className="flex gap-2">
+            <div className="flex items-center gap-2">
               {data.type === "movie" && !minimal && (
                 <button
                   type="button"
