@@ -185,10 +185,10 @@ export function AppearancePart(props: {
           </div>
           <div>
             <p className="text-white font-bold mb-3">
-              {t("settings.appearance.options.hover")}
+              {t("settings.appearance.options.modal")}
             </p>
             <p className="max-w-[25rem] font-medium">
-              {t("settings.appearance.options.hoverDescription")}
+              {t("settings.appearance.options.modalDescription")}
             </p>
             <div
               onClick={() =>
@@ -198,7 +198,7 @@ export function AppearancePart(props: {
             >
               <Toggle enabled={props.enableDetailsModal} />
               <p className="flex-1 text-white font-bold">
-                {t("settings.appearance.options.hoverLabel")}
+                {t("settings.appearance.options.modalLabel")}
               </p>
             </div>
           </div>

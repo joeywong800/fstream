@@ -677,9 +677,9 @@
         "discover": "Discover section",
         "discoverDescription": "Show the Discover section on the Homepage below your bookmarked media. Enabled by default.",
         "discoverLabel": "Discover section",
-        "hover": "Details modal",
-        "hoverDescription": "Show the details modal when hovering over a media item. Disabled by default. (Only available on desktop)",
-        "hoverLabel": "Details modal"
+        "modal": "Details modal",
+        "modalDescription": "Show the details modal when you click on a media card instead of going to the watch page. Disabled by default.",
+        "modalLabel": "Details modal"
       }
     },
     "connections": {

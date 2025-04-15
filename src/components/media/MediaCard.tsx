@@ -377,6 +377,9 @@ export function MediaCard(props: MediaCardProps) {
   const [detailsData, setDetailsData] = useState<any>();
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
   const detailsModal = useModal("details");
+  const enableDetailsModal = usePreferencesStore(
+    (state) => state.enableDetailsModal,
+  );
 
   const handleMouseEnter = () => {
     setIsHoveringCard(true);
@@ -501,6 +504,15 @@ export function MediaCard(props: MediaCardProps) {
     detailsModal.show();
   }, [media, detailsModal, onShowDetails]);
 
+  const handleCardClick = (e: React.MouseEvent) => {
+    if (enableDetailsModal && canLink) {
+      e.preventDefault();
+      handleShowDetails();
+    } else if (overlayVisible || e.defaultPrevented) {
+      e.preventDefault();
+    }
+  };
+
   const content = (
     <>
       <MediaCardContent
@@ -550,11 +562,7 @@ export function MediaCard(props: MediaCardProps) {
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
           onContextMenu={handleContextMenu}
-          onClick={(e) => {
-            if (overlayVisible || e.defaultPrevented) {
-              e.preventDefault();
-            }
-          }}
+          onClick={handleCardClick}
         >
           <MediaCardContent
             {...props}
