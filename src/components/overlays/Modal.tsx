@@ -426,7 +426,7 @@ function DetailsContent({
       {/* Content */}
       <div className="px-6 pb-6 mt-[-30px] flex-grow">
         {/* Title and Genres Row */}
-        <div className="flex flex-col sm:flex-row justify-between items-center mb-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start mb-6">
           <div className="flex items-center gap-4">
             <h3 className="text-2xl font-bold text-white mb-3 sm:mb-0 z-[999]">
               {data.title}
@@ -460,7 +460,7 @@ function DetailsContent({
             </div>
           </div>
           {data.genres && data.genres.length > 0 && (
-            <div className="flex flex-wrap gap-2 justify-start sm:justify-end z-[999] items-center">
+            <div className="flex flex-wrap gap-2 justify-start sm:justify-end z-[999] items-center pt-2">
               {data.genres.map((genre) => (
                 <span
                   key={genre.id}
