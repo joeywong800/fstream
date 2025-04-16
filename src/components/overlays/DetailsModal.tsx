@@ -277,20 +277,29 @@ function DetailsContent({
   };
 
   useEffect(() => {
-    if (activeEpisodeRef.current && carouselRef.current) {
-      const containerLeft = carouselRef.current.getBoundingClientRect().left;
-      const containerWidth = carouselRef.current.clientWidth;
-      const elementLeft = activeEpisodeRef.current.getBoundingClientRect().left;
-      const elementWidth = activeEpisodeRef.current.clientWidth;
+    if (carouselRef.current) {
+      if (activeEpisodeRef.current) {
+        // If there's an active episode, scroll to it
+        const containerLeft = carouselRef.current.getBoundingClientRect().left;
+        const containerWidth = carouselRef.current.clientWidth;
+        const elementLeft =
+          activeEpisodeRef.current.getBoundingClientRect().left;
+        const elementWidth = activeEpisodeRef.current.clientWidth;
 
-      // Calculate center
-      const scrollPosition =
-        elementLeft - containerLeft - containerWidth / 2 + elementWidth / 2;
+        const scrollPosition =
+          elementLeft - containerLeft - containerWidth / 2 + elementWidth / 2;
 
-      carouselRef.current.scrollTo({
-        left: carouselRef.current.scrollLeft + scrollPosition,
-        behavior: "smooth",
-      });
+        carouselRef.current.scrollTo({
+          left: carouselRef.current.scrollLeft + scrollPosition,
+          behavior: "smooth",
+        });
+      } else {
+        // If no active episode, scroll to the start
+        carouselRef.current.scrollTo({
+          left: 0,
+          behavior: "smooth",
+        });
+      }
     }
   }, [currentSeasonEpisodes, showProgress]);
 
