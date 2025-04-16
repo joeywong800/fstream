@@ -358,18 +358,32 @@ function DetailsContent({
               {data.title}
             </h3>
             <div className="flex items-center gap-2">
-              {data.type === "movie" && !minimal && (
+              {(data.type === "movie" ||
+                (data.type === "show" && showProgress)) && (
                 <button
                   type="button"
-                  onClick={() =>
-                    window.location.assign(
-                      `/media/tmdb-movie-${data.id}-${data.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
-                    )
-                  }
-                  className="p-2 hover:scale-95 bg-white/10 hover:bg-white/20 rounded-full transition-colors"
-                  title="Play Movie"
+                  onClick={() => {
+                    if (data.type === "movie") {
+                      window.location.assign(
+                        `/media/tmdb-movie-${data.id}-${data.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
+                      );
+                    } else if (
+                      data.type === "show" &&
+                      showProgress?.season?.id &&
+                      showProgress?.episode?.id
+                    ) {
+                      window.location.assign(
+                        `/media/tmdb-tv-${data.id}-${data.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}/${showProgress.season.id}/${showProgress.episode.id}`,
+                      );
+                    }
+                  }}
+                  className="flex items-center gap-2 p-2 hover:scale-95 bg-white/10 hover:bg-white/20 rounded-full transition-colors"
+                  title={showProgress ? "Resume" : "Play"}
                 >
                   <Icon icon={Icons.PLAY} className="text-white" />
+                  {showProgress && (
+                    <span className="text-white text-sm pr-1">Resume</span>
+                  )}
                 </button>
               )}
               <button
