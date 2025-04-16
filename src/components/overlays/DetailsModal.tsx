@@ -18,6 +18,7 @@ import { scrapeIMDb } from "@/utils/imdbScraper";
 
 import { useModal } from "./Modal";
 import { OverlayPortal } from "./OverlayDisplay";
+import { Button } from "../buttons/Button";
 import { IconPatch } from "../buttons/IconPatch";
 import { Flare } from "../utils/Flare";
 
@@ -357,47 +358,51 @@ function DetailsContent({
         )}
       </div>
       {/* Content */}
-      <div className="px-6 pb-6 mt-[-30px] flex-grow">
+      <div className="px-6 pb-6 mt-[-100px] flex-grow">
         {/* Title and Genres Row */}
+        <div className="pb-4">
+          {!minimal && (
+            <Button
+              onClick={() => {
+                if (data.type === "movie") {
+                  window.location.assign(
+                    `/media/tmdb-movie-${data.id}-${data.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
+                  );
+                } else if (
+                  data.type === "show" &&
+                  showProgress?.season?.id &&
+                  showProgress?.episode?.id
+                ) {
+                  window.location.assign(
+                    `/media/tmdb-tv-${data.id}-${data.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}/${showProgress.season.id}/${showProgress.episode.id}`,
+                  );
+                }
+              }}
+              theme="secondary"
+              className={classNames(
+                "gap-2 h-12 rounded-lg px-4 py-2 my-1 transition-transform hover:scale-105 duration-100",
+                "text-md text-white flex items-center justify-center",
+                "bg-buttons-purple bg-opacity-45 hover:bg-buttons-purpleHover hover:bg-opacity-25 backdrop-blur-md",
+                "border-2 border-gray-400 border-opacity-20",
+              )}
+            >
+              <Icon icon={Icons.PLAY} className="text-white" />
+              <span className="text-white text-sm pr-1">
+                {showProgress ? "Resume" : "Play"}
+              </span>
+            </Button>
+          )}
+        </div>
         <div className="flex flex-col sm:flex-row justify-between items-start mb-6">
           <div className="flex items-center gap-4">
             <h3 className="text-2xl font-bold text-white z-[999]">
               {data.title}
             </h3>
             <div className="flex items-center gap-2">
-              {(data.type === "movie" ||
-                (data.type === "show" && showProgress)) &&
-                !minimal && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (data.type === "movie") {
-                        window.location.assign(
-                          `/media/tmdb-movie-${data.id}-${data.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
-                        );
-                      } else if (
-                        data.type === "show" &&
-                        showProgress?.season?.id &&
-                        showProgress?.episode?.id
-                      ) {
-                        window.location.assign(
-                          `/media/tmdb-tv-${data.id}-${data.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}/${showProgress.season.id}/${showProgress.episode.id}`,
-                        );
-                      }
-                    }}
-                    className="flex items-center gap-2 p-2 hover:scale-95 bg-white/10 hover:bg-white/20 rounded-full transition-colors"
-                    title={showProgress ? "Resume" : "Play"}
-                  >
-                    <Icon icon={Icons.PLAY} className="text-white" />
-                    {showProgress && (
-                      <span className="text-white text-sm pr-1">Resume</span>
-                    )}
-                  </button>
-                )}
               <button
                 type="button"
                 onClick={toggleBookmark}
-                className="p-2 hover:scale-95 transition-transform"
+                className="p-2 pt-3 hover:scale-95 transition-transform"
                 title={isBookmarked ? "Remove Bookmark" : "Add Bookmark"}
               >
                 <Icon
