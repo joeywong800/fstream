@@ -6,16 +6,7 @@ import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { useCopyToClipboard } from "react-use";
 
-import {
-  getMediaBackdrop,
-  getMediaDetails,
-  mediaItemToId,
-} from "@/backend/metadata/tmdb";
-import {
-  TMDBContentTypes,
-  TMDBMovieData,
-  TMDBShowData,
-} from "@/backend/metadata/types/tmdb";
+import { mediaItemToId } from "@/backend/metadata/tmdb";
 import { DotList } from "@/components/text/DotList";
 import { Flare } from "@/components/utils/Flare";
 import { useSearchQuery } from "@/hooks/useSearchQuery";
@@ -375,8 +366,10 @@ export function MediaCard(props: MediaCardProps) {
   const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
   const hoverTimer = useRef<NodeJS.Timeout>();
   const [isHoveringCard, setIsHoveringCard] = useState(false);
-  const [detailsData, setDetailsData] = useState<any>();
-  const [isLoadingDetails, setIsLoadingDetails] = useState(false);
+  const [detailsData, setDetailsData] = useState<{
+    id: number;
+    type: "movie" | "show";
+  } | null>(null);
   const detailsModal = useModal("details");
   const enableDetailsModal = usePreferencesStore(
     (state) => state.enableDetailsModal,
@@ -438,70 +431,10 @@ export function MediaCard(props: MediaCardProps) {
       return;
     }
 
-    setIsLoadingDetails(true);
-    try {
-      const type =
-        media.type === "movie" ? TMDBContentTypes.MOVIE : TMDBContentTypes.TV;
-      const details = await getMediaDetails(media.id, type);
-      const backdropUrl = getMediaBackdrop(details.backdrop_path);
-
-      if (type === TMDBContentTypes.MOVIE) {
-        const movieDetails = details as TMDBMovieData;
-        setDetailsData({
-          title: movieDetails.title,
-          overview: movieDetails.overview,
-          backdrop: backdropUrl,
-          runtime: movieDetails.runtime,
-          genres: movieDetails.genres,
-          language: movieDetails.original_language,
-          voteAverage: movieDetails.vote_average,
-          voteCount: movieDetails.vote_count,
-          releaseDate: movieDetails.release_date,
-          rating: movieDetails.release_dates?.results?.find(
-            (r) => r.iso_3166_1 === "US",
-          )?.release_dates?.[0]?.certification,
-          director: movieDetails.credits?.crew?.find(
-            (person) => person.job === "Director",
-          )?.name,
-          actors: movieDetails.credits?.cast
-            ?.slice(0, 5)
-            .map((actor) => actor.name),
-          type: "movie",
-          id: movieDetails.id,
-          imdbId: movieDetails.external_ids?.imdb_id,
-        });
-      } else {
-        const showDetails = details as TMDBShowData;
-        setDetailsData({
-          title: showDetails.name,
-          overview: showDetails.overview,
-          backdrop: backdropUrl,
-          episodes: showDetails.number_of_episodes,
-          seasons: showDetails.number_of_seasons,
-          genres: showDetails.genres,
-          language: showDetails.original_language,
-          voteAverage: showDetails.vote_average,
-          voteCount: showDetails.vote_count,
-          releaseDate: showDetails.first_air_date,
-          rating: showDetails.content_ratings?.results?.find(
-            (r) => r.iso_3166_1 === "US",
-          )?.rating,
-          director: showDetails.credits?.crew?.find(
-            (person) => person.job === "Director",
-          )?.name,
-          actors: showDetails.credits?.cast
-            ?.slice(0, 5)
-            .map((actor) => actor.name),
-          type: "show",
-          id: showDetails.id,
-          imdbId: showDetails.external_ids?.imdb_id,
-        });
-      }
-    } catch (err) {
-      console.error("Failed to fetch media details:", err);
-    } finally {
-      setIsLoadingDetails(false);
-    }
+    setDetailsData({
+      id: Number(media.id),
+      type: media.type === "movie" ? "movie" : "show",
+    });
     detailsModal.show();
   }, [media, detailsModal, onShowDetails]);
 
@@ -526,11 +459,7 @@ export function MediaCard(props: MediaCardProps) {
         isHoveringCard={isHoveringCard}
         onShowDetails={handleShowDetails}
       />
-      <DetailsModal
-        id="details"
-        data={detailsData}
-        isLoading={isLoadingDetails}
-      />
+      {detailsData && <DetailsModal id="details" data={detailsData} />}
     </>
   );
 

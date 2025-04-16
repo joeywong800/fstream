@@ -3,6 +3,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
 
+import { getMediaBackdrop, getMediaDetails } from "@/backend/metadata/tmdb";
+import {
+  TMDBContentTypes,
+  TMDBMovieData,
+  TMDBShowData,
+} from "@/backend/metadata/types/tmdb";
 import { Icon, Icons } from "@/components/Icon";
 import { useBookmarkStore } from "@/stores/bookmarks";
 import { useProgressStore } from "@/stores/progress";
@@ -359,33 +365,34 @@ function DetailsContent({
             </h3>
             <div className="flex items-center gap-2">
               {(data.type === "movie" ||
-                (data.type === "show" && showProgress)) && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (data.type === "movie") {
-                      window.location.assign(
-                        `/media/tmdb-movie-${data.id}-${data.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
-                      );
-                    } else if (
-                      data.type === "show" &&
-                      showProgress?.season?.id &&
-                      showProgress?.episode?.id
-                    ) {
-                      window.location.assign(
-                        `/media/tmdb-tv-${data.id}-${data.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}/${showProgress.season.id}/${showProgress.episode.id}`,
-                      );
-                    }
-                  }}
-                  className="flex items-center gap-2 p-2 hover:scale-95 bg-white/10 hover:bg-white/20 rounded-full transition-colors"
-                  title={showProgress ? "Resume" : "Play"}
-                >
-                  <Icon icon={Icons.PLAY} className="text-white" />
-                  {showProgress && (
-                    <span className="text-white text-sm pr-1">Resume</span>
-                  )}
-                </button>
-              )}
+                (data.type === "show" && showProgress)) &&
+                !minimal && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (data.type === "movie") {
+                        window.location.assign(
+                          `/media/tmdb-movie-${data.id}-${data.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
+                        );
+                      } else if (
+                        data.type === "show" &&
+                        showProgress?.season?.id &&
+                        showProgress?.episode?.id
+                      ) {
+                        window.location.assign(
+                          `/media/tmdb-tv-${data.id}-${data.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}/${showProgress.season.id}/${showProgress.episode.id}`,
+                        );
+                      }
+                    }}
+                    className="flex items-center gap-2 p-2 hover:scale-95 bg-white/10 hover:bg-white/20 rounded-full transition-colors"
+                    title={showProgress ? "Resume" : "Play"}
+                  >
+                    <Icon icon={Icons.PLAY} className="text-white" />
+                    {showProgress && (
+                      <span className="text-white text-sm pr-1">Resume</span>
+                    )}
+                  </button>
+                )}
               <button
                 type="button"
                 onClick={toggleBookmark}
@@ -662,17 +669,112 @@ function DetailsContent({
 
 export function DetailsModal(props: {
   id: string;
-  data?: DetailsContent;
-  isLoading?: boolean;
+  data?: {
+    id: number;
+    type: "movie" | "show";
+  };
   minimal?: boolean;
 }) {
   const modal = useModal(props.id);
+  const [detailsData, setDetailsData] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (modal.isShown && !props.data && !props.isLoading) {
+    const fetchDetails = async () => {
+      if (!props.data?.id || !props.data?.type) return;
+
+      setIsLoading(true);
+      try {
+        const type =
+          props.data.type === "movie"
+            ? TMDBContentTypes.MOVIE
+            : TMDBContentTypes.TV;
+        const details = await getMediaDetails(props.data.id.toString(), type);
+        const backdropUrl = getMediaBackdrop(details.backdrop_path);
+
+        if (type === TMDBContentTypes.MOVIE) {
+          const movieDetails = details as TMDBMovieData;
+          setDetailsData({
+            title: movieDetails.title,
+            overview: movieDetails.overview,
+            backdrop: backdropUrl,
+            runtime: movieDetails.runtime,
+            genres: movieDetails.genres,
+            language: movieDetails.original_language,
+            voteAverage: movieDetails.vote_average,
+            voteCount: movieDetails.vote_count,
+            releaseDate: movieDetails.release_date,
+            rating: movieDetails.release_dates?.results?.find(
+              (r) => r.iso_3166_1 === "US",
+            )?.release_dates?.[0]?.certification,
+            director: movieDetails.credits?.crew?.find(
+              (person) => person.job === "Director",
+            )?.name,
+            actors: movieDetails.credits?.cast
+              ?.slice(0, 5)
+              .map((actor) => actor.name),
+            type: "movie",
+            id: movieDetails.id,
+            imdbId: movieDetails.external_ids?.imdb_id,
+          });
+        } else {
+          const showDetails = details as TMDBShowData & {
+            episodes: Array<{
+              id: number;
+              name: string;
+              episode_number: number;
+              overview: string;
+              still_path: string | null;
+              air_date: string;
+              season_number: number;
+            }>;
+          };
+          setDetailsData({
+            title: showDetails.name,
+            overview: showDetails.overview,
+            backdrop: backdropUrl,
+            episodes: showDetails.number_of_episodes,
+            seasons: showDetails.number_of_seasons,
+            genres: showDetails.genres,
+            language: showDetails.original_language,
+            voteAverage: showDetails.vote_average,
+            voteCount: showDetails.vote_count,
+            releaseDate: showDetails.first_air_date,
+            rating: showDetails.content_ratings?.results?.find(
+              (r) => r.iso_3166_1 === "US",
+            )?.rating,
+            director: showDetails.credits?.crew?.find(
+              (person) => person.job === "Director",
+            )?.name,
+            actors: showDetails.credits?.cast
+              ?.slice(0, 5)
+              .map((actor) => actor.name),
+            type: "show",
+            id: showDetails.id,
+            imdbId: showDetails.external_ids?.imdb_id,
+            seasonData: {
+              seasons: showDetails.seasons,
+              episodes: showDetails.episodes,
+            },
+          });
+        }
+      } catch (err) {
+        console.error("Failed to fetch media details:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (modal.isShown && props.data?.id) {
+      fetchDetails();
+    }
+  }, [modal.isShown, props.data]);
+
+  useEffect(() => {
+    if (modal.isShown && !props.data?.id && !isLoading) {
       modal.hide();
     }
-  }, [modal, props.data, props.isLoading]);
+  }, [modal, props.data, isLoading]);
 
   return (
     <OverlayPortal darken close={modal.hide} show={modal.isShown}>
@@ -685,9 +787,9 @@ export function DetailsModal(props: {
             "group -m-[0.705em] rounded-3xl bg-background-main transition-colors duration-300 focus:relative focus:z-10",
             "max-h-[900px] max-w-[1200px]",
             "bg-mediaCard-hoverBackground bg-opacity-60 backdrop-filter backdrop-blur-lg shadow-lg overflow-hidden",
-            props.data?.type === "movie" || props.minimal
+            detailsData?.type === "movie" || props.minimal
               ? "h-[90%] md:h-[70%] lg:h-fit w-[90%] md:w-[70%] lg:w-[50%]"
-              : "h-[90%] w-[90%] md:w-[70%] lg:w-[60%]", // that seems to work lmao
+              : "h-[90%] w-[90%] md:w-[70%] lg:w-[60%]",
           )}
         >
           <div className="transition-transform duration-300 h-full">
@@ -708,10 +810,10 @@ export function DetailsModal(props: {
                 </button>
               </div>
               <div className="pt-12">
-                {props.isLoading || !props.data ? (
+                {isLoading || !detailsData ? (
                   <DetailsSkeleton />
                 ) : (
-                  <DetailsContent data={props.data} minimal={props.minimal} />
+                  <DetailsContent data={detailsData} minimal={props.minimal} />
                 )}
               </div>
             </Flare.Child>
