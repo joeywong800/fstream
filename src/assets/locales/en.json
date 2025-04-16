@@ -678,7 +678,7 @@
         "discoverDescription": "Show the Discover section on the Homepage below your bookmarked media. Enabled by default.",
         "discoverLabel": "Discover section",
         "modal": "Details modal",
-        "modalDescription": "Show the details modal when you click on a media card instead of going to the watch page. Proxy or Extension Required. Disabled by default.",
+        "modalDescription": "Show the details modal when you click on a media card instead of going to the watch page. Proxy or Extension required for trailer. Disabled by default.",
         "modalLabel": "Details modal"
       }
     },
