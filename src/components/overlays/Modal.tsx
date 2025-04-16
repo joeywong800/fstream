@@ -1,5 +1,12 @@
 import classNames from "classnames";
-import { ReactNode, useCallback, useEffect, useRef, useState } from "react";
+import {
+  ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
 
@@ -11,6 +18,7 @@ import { Heading2 } from "@/components/utils/Text";
 import { useQueryParam } from "@/hooks/useQueryParams";
 import { useBookmarkStore } from "@/stores/bookmarks";
 import { useProgressStore } from "@/stores/progress";
+import { shouldShowProgress } from "@/stores/progress/utils";
 import { scrapeIMDb } from "@/utils/imdbScraper";
 
 export function useModal(id: string) {
@@ -184,6 +192,10 @@ interface DetailsContent {
   episodes?: number;
   seasons?: number;
   imdbId?: string;
+  episode?: {
+    id: number;
+    number: number;
+  };
   seasonData?: {
     seasons: Array<{
       id: number;
@@ -221,11 +233,35 @@ function DetailsContent({
   const [isPaused, setIsPaused] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const progress = useProgressStore((s) => s.items);
+  const carouselRef = useRef<HTMLDivElement>(null);
+  const activeEpisodeRef = useRef<HTMLAnchorElement>(null);
 
   const addBookmark = useBookmarkStore((s) => s.addBookmark);
   const removeBookmark = useBookmarkStore((s) => s.removeBookmark);
   const bookmarks = useBookmarkStore((s) => s.bookmarks);
   const isBookmarked = !!bookmarks[data.id?.toString() ?? ""];
+
+  const showProgress = useMemo(() => {
+    if (!data.id) return null;
+    const item = progress[data.id.toString()];
+    if (!item) return null;
+    return shouldShowProgress(item);
+  }, [data.id, progress]);
+
+  // Set initial season based on current episode
+  const [selectedSeason, setSelectedSeason] = useState<number>(() => {
+    if (showProgress?.season?.number) {
+      return showProgress.season.number;
+    }
+    return 1;
+  });
+
+  // Update selected season when showProgress changes
+  useEffect(() => {
+    if (showProgress?.season?.number) {
+      setSelectedSeason(showProgress.season.number);
+    }
+  }, [showProgress]);
 
   const toggleBookmark = useCallback(() => {
     if (!data.id) return;
@@ -313,9 +349,6 @@ function DetailsContent({
     return "bg-red-500";
   };
 
-  const [selectedSeason, setSelectedSeason] = useState<number>(1);
-  const carouselRef = useRef<HTMLDivElement>(null);
-
   const handleScroll = (direction: "left" | "right") => {
     if (!carouselRef.current) return;
 
@@ -350,13 +383,33 @@ function DetailsContent({
     return `/media/tmdb-tv-${data.id}-${data.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}/${season.id}/${episode.id}`;
   };
 
-  // Function to get progress for an episode
-  const getEpisodeProgress = (episodeId: string) => {
-    if (!data.id) return null;
-    const showProgress = progress[data.id.toString()];
-    if (!showProgress) return null;
-    return showProgress.episodes[episodeId]?.progress;
-  };
+  useEffect(() => {
+    if (activeEpisodeRef.current) {
+      // horizontal scroll
+      if (window.innerWidth >= 1024 && carouselRef.current) {
+        const containerLeft = carouselRef.current.getBoundingClientRect().left;
+        const containerWidth = carouselRef.current.clientWidth;
+        const elementLeft =
+          activeEpisodeRef.current.getBoundingClientRect().left;
+        const elementWidth = activeEpisodeRef.current.clientWidth;
+
+        // Calculate center
+        const scrollPosition =
+          elementLeft - containerLeft - containerWidth / 2 + elementWidth / 2;
+
+        carouselRef.current.scrollTo({
+          left: carouselRef.current.scrollLeft + scrollPosition,
+          behavior: "smooth",
+        });
+      } else {
+        // vertical scroll
+        activeEpisodeRef.current.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+      }
+    }
+  }, [currentSeasonEpisodes, showProgress]);
 
   return (
     <div className="relative h-full flex flex-col">
@@ -624,18 +677,25 @@ function DetailsContent({
                 <div className="flex-shrink-0 w-4" />
 
                 {currentSeasonEpisodes?.map((episode) => {
-                  const episodeProgress = getEpisodeProgress(
-                    episode.id.toString(),
-                  );
-                  const percentage = episodeProgress
-                    ? (episodeProgress.watched / episodeProgress.duration) * 100
+                  const isActive =
+                    showProgress?.episode?.id === episode.id.toString();
+                  const percentage = isActive
+                    ? (showProgress.progress.watched /
+                        showProgress.progress.duration) *
+                      100
                     : 0;
 
                   return (
                     <Link
                       key={episode.id}
                       to={getEpisodeUrl(episode)}
-                      className="flex-shrink-0 w-64 rounded-lg overflow-hidden transition-all duration-200 relative cursor-pointer hover:scale-95 hover:bg-white/5"
+                      ref={isActive ? activeEpisodeRef : null}
+                      className={classNames(
+                        "flex-shrink-0 w-64 rounded-lg overflow-hidden transition-all duration-200 relative cursor-pointer",
+                        isActive
+                          ? "bg-video-context-hoverColor/50"
+                          : "hover:scale-95 hover:bg-white/5",
+                      )}
                     >
                       {/* Thumbnail */}
                       <div className="relative aspect-video w-full bg-video-context-hoverColor">
@@ -675,7 +735,7 @@ function DetailsContent({
                       </div>
 
                       {/* Progress Bar */}
-                      {episodeProgress && (
+                      {isActive && (
                         <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/10">
                           <div
                             className="h-full bg-progress-filled transition-all duration-300"
