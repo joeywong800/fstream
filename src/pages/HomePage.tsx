@@ -3,12 +3,6 @@ import { Helmet } from "react-helmet-async";
 import { useTranslation } from "react-i18next";
 import { To, useNavigate } from "react-router-dom";
 
-import { getMediaBackdrop, getMediaDetails } from "@/backend/metadata/tmdb";
-import {
-  TMDBContentTypes,
-  TMDBMovieData,
-  TMDBShowData,
-} from "@/backend/metadata/types/tmdb";
 import { WideContainer } from "@/components/layout/WideContainer";
 import { DetailsModal } from "@/components/overlays/DetailsModal";
 import { useModal } from "@/components/overlays/Modal";
@@ -60,7 +54,7 @@ export function HomePage() {
   const [showBookmarks, setShowBookmarks] = useState(false);
   const [showWatching, setShowWatching] = useState(false);
   const [detailsData, setDetailsData] = useState<any>();
-  const [isLoadingDetails, setIsLoadingDetails] = useState(false);
+  // const [isLoadingDetails, setIsLoadingDetails] = useState(false);
   const detailsModal = useModal("details");
 
   const handleClick = (path: To) => {

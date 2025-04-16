@@ -1,10 +1,10 @@
 import classNames from "classnames";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { Toggle } from "@/components/buttons/Toggle";
 import { Icon, Icons } from "@/components/Icon";
 import { Heading1 } from "@/components/utils/Text";
-import { useAuthStore } from "@/stores/auth";
 import { hasProxyCheck } from "@/utils/hasProxy";
 
 const availableThemes = [
@@ -160,8 +160,11 @@ export function AppearancePart(props: {
   setEnableDetailsModal: (v: boolean) => void;
 }) {
   const { t } = useTranslation();
+  const [hasProxy, setHasProxy] = useState<boolean>(false);
 
-  const hasProxy = hasProxyCheck();
+  useEffect(() => {
+    hasProxyCheck().then(setHasProxy);
+  }, []);
 
   return (
     <div className="space-y-12">
