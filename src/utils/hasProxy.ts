@@ -1,9 +1,12 @@
 import { isExtensionActive } from "@/backend/extension/messaging";
 import { useAuthStore } from "@/stores/auth";
 
-const hasExtension = await isExtensionActive();
-const hasProxy = Boolean(useAuthStore.getState().proxySet);
+let hasExtension: boolean | null = null;
 
-export function hasProxyCheck(): boolean {
+export async function hasProxyCheck(): Promise<boolean> {
+  if (hasExtension === null) {
+    hasExtension = await isExtensionActive();
+  }
+  const hasProxy = Boolean(useAuthStore.getState().proxySet);
   return hasExtension || hasProxy;
 }
