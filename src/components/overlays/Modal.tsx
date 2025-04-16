@@ -10,6 +10,7 @@ import { Flare } from "@/components/utils/Flare";
 import { Heading2 } from "@/components/utils/Text";
 import { useQueryParam } from "@/hooks/useQueryParams";
 import { useBookmarkStore } from "@/stores/bookmarks";
+import { useProgressStore } from "@/stores/progress";
 import { scrapeIMDb } from "@/utils/imdbScraper";
 
 export function useModal(id: string) {
@@ -219,6 +220,7 @@ function DetailsContent({
   const [isMuted, setIsMuted] = useState(true);
   const [isPaused, setIsPaused] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const progress = useProgressStore((s) => s.items);
 
   const addBookmark = useBookmarkStore((s) => s.addBookmark);
   const removeBookmark = useBookmarkStore((s) => s.removeBookmark);
@@ -346,6 +348,14 @@ function DetailsContent({
 
     // Create the URL in the format: /media/tmdb-tv-{showId}-{showName}/{seasonId}/{episodeId}
     return `/media/tmdb-tv-${data.id}-${data.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}/${season.id}/${episode.id}`;
+  };
+
+  // Function to get progress for an episode
+  const getEpisodeProgress = (episodeId: string) => {
+    if (!data.id) return null;
+    const showProgress = progress[data.id.toString()];
+    if (!showProgress) return null;
+    return showProgress.episodes[episodeId]?.progress;
   };
 
   return (
@@ -613,50 +623,71 @@ function DetailsContent({
                 {/* Add padding before the first card */}
                 <div className="flex-shrink-0 w-4" />
 
-                {currentSeasonEpisodes?.map((episode) => (
-                  <Link
-                    key={episode.id}
-                    to={getEpisodeUrl(episode)}
-                    className="flex-shrink-0 w-64 rounded-lg overflow-hidden transition-all duration-200 relative cursor-pointer hover:scale-95 hover:bg-white/5"
-                  >
-                    {/* Thumbnail */}
-                    <div className="relative aspect-video w-full bg-video-context-hoverColor">
-                      {episode.still_path ? (
-                        <img
-                          src={`https://image.tmdb.org/t/p/w300${episode.still_path}`}
-                          alt={episode.name}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-black bg-opacity-50">
-                          <Icon
-                            icon={Icons.FILM}
-                            className="text-video-context-type-main opacity-50 text-3xl"
+                {currentSeasonEpisodes?.map((episode) => {
+                  const episodeProgress = getEpisodeProgress(
+                    episode.id.toString(),
+                  );
+                  const percentage = episodeProgress
+                    ? (episodeProgress.watched / episodeProgress.duration) * 100
+                    : 0;
+
+                  return (
+                    <Link
+                      key={episode.id}
+                      to={getEpisodeUrl(episode)}
+                      className="flex-shrink-0 w-64 rounded-lg overflow-hidden transition-all duration-200 relative cursor-pointer hover:scale-95 hover:bg-white/5"
+                    >
+                      {/* Thumbnail */}
+                      <div className="relative aspect-video w-full bg-video-context-hoverColor">
+                        {episode.still_path ? (
+                          <img
+                            src={`https://image.tmdb.org/t/p/w300${episode.still_path}`}
+                            alt={episode.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center bg-black bg-opacity-50">
+                            <Icon
+                              icon={Icons.FILM}
+                              className="text-video-context-type-main opacity-50 text-3xl"
+                            />
+                          </div>
+                        )}
+
+                        {/* Episode Number Badge */}
+                        <div className="absolute top-2 left-2">
+                          <span className="p-0.5 px-2 rounded inline bg-video-context-hoverColor bg-opacity-80 text-video-context-type-main text-sm">
+                            E{episode.episode_number}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Content */}
+                      <div className="p-3">
+                        <h3 className="font-bold text-white line-clamp-1">
+                          {episode.name}
+                        </h3>
+                        {episode.overview && (
+                          <p className="text-sm text-white/80 mt-1.5 line-clamp-2">
+                            {episode.overview}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Progress Bar */}
+                      {episodeProgress && (
+                        <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/10">
+                          <div
+                            className="h-full bg-progress-filled transition-all duration-300"
+                            style={{
+                              width: `${percentage > 98 ? 100 : percentage}%`,
+                            }}
                           />
                         </div>
                       )}
-
-                      {/* Episode Number Badge */}
-                      <div className="absolute top-2 left-2">
-                        <span className="p-0.5 px-2 rounded inline bg-video-context-hoverColor bg-opacity-80 text-video-context-type-main text-sm">
-                          E{episode.episode_number}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Content */}
-                    <div className="p-3">
-                      <h3 className="font-bold text-white line-clamp-1">
-                        {episode.name}
-                      </h3>
-                      {episode.overview && (
-                        <p className="text-sm text-white/80 mt-1.5 line-clamp-2">
-                          {episode.overview}
-                        </p>
-                      )}
-                    </div>
-                  </Link>
-                ))}
+                    </Link>
+                  );
+                })}
 
                 {/* Add padding after the last card */}
                 <div className="flex-shrink-0 w-4" />
