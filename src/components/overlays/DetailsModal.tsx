@@ -377,14 +377,17 @@ function DetailsContent({
                   window.location.assign(
                     `/media/tmdb-movie-${data.id}-${data.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
                   );
-                } else if (
-                  data.type === "show" &&
-                  showProgress?.season?.id &&
-                  showProgress?.episode?.id
-                ) {
-                  window.location.assign(
-                    `/media/tmdb-tv-${data.id}-${data.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}/${showProgress.season.id}/${showProgress.episode.id}`,
-                  );
+                } else if (data.type === "show") {
+                  if (showProgress?.season?.id && showProgress?.episode?.id) {
+                    window.location.assign(
+                      `/media/tmdb-tv-${data.id}-${data.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}/${showProgress.season.id}/${showProgress.episode.id}`,
+                    );
+                  } else {
+                    // Start new show
+                    window.location.assign(
+                      `/media/tmdb-tv-${data.id}-${data.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
+                    );
+                  }
                 }
               }}
               theme="secondary"
