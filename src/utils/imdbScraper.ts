@@ -82,8 +82,7 @@ export async function scrapeIMDb(
 ): Promise<IMDbMetadata> {
   // Check if we have a proxy or extension
   const hasExtension = await isExtensionActive();
-  const proxyUrls = useAuthStore.getState().proxySet;
-  const hasProxy = proxyUrls !== null && proxyUrls.length > 0;
+  const hasProxy = Boolean(useAuthStore.getState().proxySet);
 
   if (!hasExtension && !hasProxy) {
     throw new Error(

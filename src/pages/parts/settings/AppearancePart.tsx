@@ -4,6 +4,8 @@ import { useTranslation } from "react-i18next";
 import { Toggle } from "@/components/buttons/Toggle";
 import { Icon, Icons } from "@/components/Icon";
 import { Heading1 } from "@/components/utils/Text";
+import { useAuthStore } from "@/stores/auth";
+import { hasProxyCheck } from "@/utils/hasProxy";
 
 const availableThemes = [
   {
@@ -159,6 +161,8 @@ export function AppearancePart(props: {
 }) {
   const { t } = useTranslation();
 
+  const hasProxy = hasProxyCheck();
+
   return (
     <div className="space-y-12">
       <Heading1 border>{t("settings.appearance.title")}</Heading1>
@@ -192,11 +196,18 @@ export function AppearancePart(props: {
             </p>
             <div
               onClick={() =>
-                props.setEnableDetailsModal(!props.enableDetailsModal)
+                hasProxy
+                  ? props.setEnableDetailsModal(!props.enableDetailsModal)
+                  : null
               }
-              className="opacity-50 md:opacity-100 bg-dropdown-background hover:bg-dropdown-hoverBackground select-none my-4 cursor-pointer space-x-3 flex items-center max-w-[25rem] py-3 px-4 rounded-lg"
+              className={classNames(
+                "bg-dropdown-background hover:bg-dropdown-hoverBackground select-none my-4 cursor-pointer space-x-3 flex items-center max-w-[25rem] py-3 px-4 rounded-lg",
+                hasProxy
+                  ? "cursor-pointer opacity-100 pointer-events-auto"
+                  : "cursor-not-allowed opacity-50 pointer-events-none",
+              )}
             >
-              <Toggle enabled={props.enableDetailsModal} />
+              <Toggle enabled={props.enableDetailsModal && hasProxy} />
               <p className="flex-1 text-white font-bold">
                 {t("settings.appearance.options.modalLabel")}
               </p>
