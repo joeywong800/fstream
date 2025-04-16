@@ -10,7 +10,8 @@ import {
   TMDBShowData,
 } from "@/backend/metadata/types/tmdb";
 import { WideContainer } from "@/components/layout/WideContainer";
-import { DetailsModal, useModal } from "@/components/overlays/Modal";
+import { DetailsModal } from "@/components/overlays/DetailsModal";
+import { useModal } from "@/components/overlays/Modal";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useRandomTranslation } from "@/hooks/useRandomTranslation";
 import { useSearchQuery } from "@/hooks/useSearchQuery";

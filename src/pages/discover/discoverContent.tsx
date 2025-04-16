@@ -11,7 +11,8 @@ import {
   TMDBMovieData,
   TMDBShowData,
 } from "@/backend/metadata/types/tmdb";
-import { DetailsModal, useModal } from "@/components/overlays/Modal";
+import { DetailsModal } from "@/components/overlays/DetailsModal";
+import { useModal } from "@/components/overlays/Modal";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import {
   Genre,
