@@ -9,6 +9,7 @@ import {
   TMDBMovieData,
   TMDBShowData,
 } from "@/backend/metadata/types/tmdb";
+import { Dropdown } from "@/components/form/Dropdown";
 import { Icon, Icons } from "@/components/Icon";
 import { useBookmarkStore } from "@/stores/bookmarks";
 import { useProgressStore } from "@/stores/progress";
@@ -535,17 +536,17 @@ function DetailsContent({
             {/* Season Selector */}
             <div className="flex justify-between items-center mb-3">
               <h4 className="text-lg font-semibold text-white">Episodes</h4>
-              <select
-                value={selectedSeason}
-                onChange={(e) => setSelectedSeason(Number(e.target.value))}
-                className="bg-white/10 text-white rounded-lg px-3 py-1.5 text-sm border border-white/20 focus:outline-none focus:ring-2 focus:ring-white/30"
-              >
-                {data.seasonData.seasons.map((season) => (
-                  <option key={season.id} value={season.season_number}>
-                    Season {season.season_number}
-                  </option>
-                ))}
-              </select>
+              <Dropdown
+                options={data.seasonData.seasons.map((season) => ({
+                  id: season.season_number.toString(),
+                  name: `Season ${season.season_number}`,
+                }))}
+                selectedItem={{
+                  id: selectedSeason.toString(),
+                  name: `Season ${selectedSeason}`,
+                }}
+                setSelectedItem={(item) => setSelectedSeason(Number(item.id))}
+              />
             </div>
 
             {/* Episodes Carousel */}

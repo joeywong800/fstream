@@ -1,16 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import {
-  get,
-  getMediaBackdrop,
-  getMediaDetails,
-} from "@/backend/metadata/tmdb";
-import {
-  TMDBContentTypes,
-  TMDBMovieData,
-  TMDBShowData,
-} from "@/backend/metadata/types/tmdb";
+import { get } from "@/backend/metadata/tmdb";
 import { DetailsModal } from "@/components/overlays/DetailsModal";
 import { useModal } from "@/components/overlays/Modal";
 import { useIsMobile } from "@/hooks/useIsMobile";
@@ -120,7 +111,6 @@ export function DiscoverContent() {
   const [editorPicksMovies, setEditorPicksMovies] = useState<Movie[]>([]);
   const [editorPicksTVShows, setEditorPicksTVShows] = useState<any[]>([]);
   const [detailsData, setDetailsData] = useState<any>();
-  const [isLoadingDetails, setIsLoadingDetails] = useState(false);
   const detailsModal = useModal("discover-details");
 
   // Refs
