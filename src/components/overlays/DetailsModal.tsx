@@ -594,9 +594,11 @@ function DetailsContent({
                 {currentSeasonEpisodes?.map((episode) => {
                   const isActive =
                     showProgress?.episode?.id === episode.id.toString();
-                  const percentage = isActive
-                    ? (showProgress.progress.watched /
-                        showProgress.progress.duration) *
+                  const episodeProgress =
+                    progress[data.id?.toString() ?? ""]?.episodes?.[episode.id];
+                  const percentage = episodeProgress
+                    ? (episodeProgress.progress.watched /
+                        episodeProgress.progress.duration) *
                       100
                     : 0;
                   const isAired = hasAired(episode.air_date);
@@ -659,10 +661,10 @@ function DetailsContent({
                       </div>
 
                       {/* Progress Bar */}
-                      {isActive && (
-                        <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/10">
+                      {percentage > 0 && (
+                        <div className="absolute bottom-0 left-0 right-0 h-1 bg-progress-background/25">
                           <div
-                            className="h-full bg-progress-filled transition-all duration-300"
+                            className="h-full bg-progress-filled"
                             style={{
                               width: `${percentage > 98 ? 100 : percentage}%`,
                             }}
