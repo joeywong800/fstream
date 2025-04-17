@@ -11,6 +11,7 @@ import {
 } from "@/backend/metadata/types/tmdb";
 import { Dropdown } from "@/components/form/Dropdown";
 import { Icon, Icons } from "@/components/Icon";
+import { hasAired } from "@/components/player/utils/aired";
 import { useBookmarkStore } from "@/stores/bookmarks";
 import { useProgressStore } from "@/stores/progress";
 import { shouldShowProgress } from "@/stores/progress/utils";
@@ -414,7 +415,7 @@ function DetailsContent({
               <button
                 type="button"
                 onClick={toggleBookmark}
-                className="p-2 pt-3 hover:scale-95 transition-transform"
+                className="p-2 pt-3 hover:scale-110 transition-transform"
                 title={isBookmarked ? "Remove Bookmark" : "Add Bookmark"}
               >
                 <Icon
@@ -598,6 +599,7 @@ function DetailsContent({
                         showProgress.progress.duration) *
                       100
                     : 0;
+                  const isAired = hasAired(episode.air_date);
 
                   return (
                     <Link
@@ -605,10 +607,11 @@ function DetailsContent({
                       to={getEpisodeUrl(episode)}
                       ref={isActive ? activeEpisodeRef : null}
                       className={classNames(
-                        "flex-shrink-0 w-64 rounded-lg overflow-hidden transition-all duration-200 relative cursor-pointer",
+                        "flex-shrink-0 w-64 rounded-lg overflow-hidden transition-all duration-200 relative cursor-pointer hover:scale-95",
                         isActive
-                          ? "bg-video-context-hoverColor/50"
-                          : "hover:scale-95 hover:bg-white/5",
+                          ? "bg-video-context-hoverColor/50 hover:bg-white/5"
+                          : "hover:bg-video-context-hoverColor/50 hover:bg-white/5",
+                        !isAired ? "opacity-50" : "",
                       )}
                     >
                       {/* Thumbnail */}
@@ -629,10 +632,17 @@ function DetailsContent({
                         )}
 
                         {/* Episode Number Badge */}
-                        <div className="absolute top-2 left-2">
+                        <div className="absolute top-2 left-2 flex items-center space-x-2">
                           <span className="p-0.5 px-2 rounded inline bg-video-context-hoverColor bg-opacity-80 text-video-context-type-main text-sm">
                             E{episode.episode_number}
                           </span>
+                          {!isAired && (
+                            <span className="text-video-context-type-main/70 text-sm">
+                              {episode.air_date
+                                ? `(Airs - ${new Date(episode.air_date).toLocaleDateString()})`
+                                : "(Unreleased)"}
+                            </span>
+                          )}
                         </div>
                       </div>
 
@@ -812,7 +822,7 @@ export function DetailsModal(props: {
         >
           <div className="transition-transform duration-300 h-full">
             <Flare.Light
-              flareSize={300}
+              flareSize={500}
               cssColorVar="--colors-mediaCard-hoverAccent"
               backgroundClass="bg-mediaCard-hoverBackground duration-100"
               className="rounded-3xl bg-background-main group-hover:opacity-100"
