@@ -27,15 +27,14 @@ export function EmbedOption(props: {
   url: string;
   sourceId: string;
   routerId: string;
+  displayName?: string;
 }) {
   const { t } = useTranslation();
   const unknownEmbedName = t("player.menus.sources.unknownOption");
 
   const embedName = useMemo(() => {
-    if (!props.embedId) return unknownEmbedName;
-    const sourceMeta = getCachedMetadata().find((s) => s.id === props.embedId);
-    return sourceMeta?.name ?? unknownEmbedName;
-  }, [props.embedId, unknownEmbedName]);
+    return props.displayName || props.embedId || unknownEmbedName;
+  }, [props.displayName, props.embedId, unknownEmbedName]);
 
   const { run, errored, loading } = useEmbedScraping(
     props.routerId,
@@ -104,8 +103,7 @@ export function EmbedSelectionView({ sourceId, id }: EmbedSelectionViewProps) {
         {t("player.menus.sources.failed.text")}
       </Menu.TextDisplay>
     );
-  else if (watching)
-    content = null; // when it starts watching, empty the display
+  else if (watching) content = null;
   else if (items && sourceId)
     content = items.map((v) => (
       <EmbedOption
@@ -114,6 +112,7 @@ export function EmbedSelectionView({ sourceId, id }: EmbedSelectionViewProps) {
         url={v.url}
         routerId={id}
         sourceId={sourceId}
+        displayName={v.displayName}
       />
     ));
 
