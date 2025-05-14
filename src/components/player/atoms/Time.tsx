@@ -15,6 +15,7 @@ export function Time(props: { short?: boolean }) {
     time,
     draggingTime,
   } = usePlayerStore((s) => s.progress);
+  const meta = usePlayerStore((s) => s.meta);
   const { isSeeking } = usePlayerStore((s) => s.interface);
   const { t } = useTranslation();
   const hasHours = durationExceedsHour(timeDuration);
@@ -47,6 +48,8 @@ export function Time(props: { short?: boolean }) {
           type: "playerTimeUpdate",
           time: currentTime,
           duration: timeDuration,
+          tmdbId: meta?.tmdbId,
+          imdbId: meta?.imdbId,
         },
         "*",
       );
@@ -59,6 +62,8 @@ export function Time(props: { short?: boolean }) {
             type: "playerTimeUpdate",
             time: currentTime,
             duration: timeDuration,
+            tmdbId: meta?.tmdbId,
+            imdbId: meta?.imdbId,
           },
           "*",
         );
@@ -74,7 +79,7 @@ export function Time(props: { short?: boolean }) {
         timeoutRef.current = null;
       }
     };
-  }, [time, draggingTime, isSeeking, timeDuration]);
+  }, [time, draggingTime, isSeeking, timeDuration, meta]);
 
   function toggleMode() {
     setTimeFormat(
