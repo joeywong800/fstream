@@ -1,10 +1,10 @@
 window.__CONFIG__ = {
   // The URL for the CORS proxy, the URL must NOT end with a slash!
   // If not specified, the onboarding will not allow a "default setup". The user will have to use the extension or set up a proxy themselves
-  VITE_CORS_PROXY_URL: "",
+  VITE_CORS_PROXY_URL: "https://pstream.aaronnicor7.workers.dev",
 
   // The READ API key to access TMDB
-  VITE_TMDB_READ_API_KEY: "",
+  VITE_TMDB_READ_API_KEY: "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJjZGFhM2M4MDJlYjcwMjAxNjhiYzUwNWE1YWE2ODZlNiIsIm5iZiI6MTcwMTY3NTQ3NC4yOTEwMDAxLCJzdWIiOiI2NTZkODFkMjg4NjM0ODAxNGQ4NTEzYTMiLCJzY29wZXMiOlsiYXBpX3JlYWQiXSwidmVyc2lvbiI6MX0.tRHVdLoUYnzV-3KtxRpu9hEBWIB7BIUjrFSQOeROwZc",
 
   // The DMCA email displayed in the footer, null to hide the DMCA link
   VITE_DMCA_EMAIL: null,
