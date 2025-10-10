@@ -1,3 +1,5 @@
+/// <reference types="chromecast-caf-sender" />
+
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { Icons } from "@/components/Icon";
@@ -49,28 +51,28 @@ export function Chromecast(props: ChromecastProps) {
     };
   }, [setButtonVisibility]);
 
-  // Hide the button when there are no cast devices available according to CAF
   useEffect(() => {
-    const w = window as any;
-    const cast = w?.cast;
-    if (!cast?.framework) return;
+    const w = window as unknown as { cast?: typeof cast };
+    const castFramework = w.cast?.framework;
+    if (!castFramework) return;
 
-    const context = cast.framework.CastContext.getInstance();
+    const context = castFramework.CastContext.getInstance();
     const update = () => {
       const state = context.getCastState();
-      setCastHidden(state === cast.framework.CastState.NO_DEVICES_AVAILABLE);
+      setCastHidden(state === castFramework.CastState.NO_DEVICES_AVAILABLE);
     };
+
     const handler = () => update();
 
     context.addEventListener(
-      cast.framework.CastContextEventType.CAST_STATE_CHANGED,
+      castFramework.CastContextEventType.CAST_STATE_CHANGED,
       handler,
     );
     update();
 
     return () => {
       context.removeEventListener(
-        cast.framework.CastContextEventType.CAST_STATE_CHANGED,
+        castFramework.CastContextEventType.CAST_STATE_CHANGED,
         handler,
       );
     };
@@ -87,11 +89,12 @@ export function Chromecast(props: ChromecastProps) {
       ].join(" ")}
       icon={Icons.CASTING}
       onClick={(el) => {
-        const castButton = el.querySelector("google-cast-launcher");
-        if (castButton) (castButton as HTMLDivElement).click();
+        const castButton = el.querySelector<HTMLElement>(
+          "google-cast-launcher",
+        );
+        if (castButton) castButton.click();
       }}
     >
-      {/* Render a hidden launcher so programmatic click always works */}
       <google-cast-launcher
         style={{
           width: 0,

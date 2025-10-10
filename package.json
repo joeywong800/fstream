@@ -5,7 +5,7 @@
   "private": true,
   "homepage": "https://github.com/p-stream/p-stream",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host",
     "build": "vite build",
     "build:pwa": "cross-env VITE_PWA_ENABLED=true vite build",
     "update-and-build": "pnpm remove @p-stream/providers && pnpm add github:p-stream/providers#production && pnpm run build",
