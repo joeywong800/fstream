@@ -589,14 +589,14 @@
     "close": "Close"
   },
   "player": {
+    "back": {
+      "default": "Back to home",
+      "short": "Back"
+    },
     "casting": {
       "to": "Casting to {{device}} 📺",
       "device": "device",
       "enabled": "Casting to device 🎬"
-    },
-    "back": {
-      "default": "Back to home",
-      "short": "Back"
     },
     "menus": {
       "downloads": {
