@@ -1,12 +1,11 @@
 /// <reference types="chromecast-caf-sender" />
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
-import { Icons } from "@/components/Icon";
 import { VideoPlayerButton } from "@/components/player/internals/Button";
 import { usePlayerStore } from "@/stores/player/store";
 
-// Allow the custom element in TSX without adding a global d.ts file
+// Allow the custom element in TSX
 /* eslint-disable @typescript-eslint/no-namespace */
 declare global {
   namespace JSX {
@@ -21,35 +20,10 @@ export interface ChromecastProps {
   className?: string;
 }
 
-export function Chromecast(props: ChromecastProps) {
-  const [hidden, setHidden] = useState(false);
+export function Chromecast({ className }: ChromecastProps) {
   const [castHidden, setCastHidden] = useState(false);
   const isCasting = usePlayerStore((s) => s.interface.isCasting);
-  const ref = useRef<HTMLButtonElement>(null);
-
-  const setButtonVisibility = useCallback(
-    (tag: HTMLElement) => {
-      const isVisible = (tag.getAttribute("style") ?? "").includes("inline");
-      setHidden(!isVisible);
-    },
-    [setHidden],
-  );
-
-  useEffect(() => {
-    const tag = ref.current?.querySelector<HTMLElement>("google-cast-launcher");
-    if (!tag) return;
-
-    const observer = new MutationObserver(() => {
-      setButtonVisibility(tag);
-    });
-
-    observer.observe(tag, { attributes: true, attributeFilter: ["style"] });
-    setButtonVisibility(tag);
-
-    return () => {
-      observer.disconnect();
-    };
-  }, [setButtonVisibility]);
+  const launcherRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const w = window as unknown as { cast?: typeof cast };
@@ -57,18 +31,17 @@ export function Chromecast(props: ChromecastProps) {
     if (!castFramework) return;
 
     const context = castFramework.CastContext.getInstance();
-    const update = () => {
+    const updateVisibility = () => {
       const state = context.getCastState();
       setCastHidden(state === castFramework.CastState.NO_DEVICES_AVAILABLE);
     };
 
-    const handler = () => update();
-
+    const handler = () => updateVisibility();
     context.addEventListener(
       castFramework.CastContextEventType.CAST_STATE_CHANGED,
       handler,
     );
-    update();
+    updateVisibility();
 
     return () => {
       context.removeEventListener(
@@ -78,33 +51,24 @@ export function Chromecast(props: ChromecastProps) {
     };
   }, []);
 
+  useEffect(() => {
+    if (!launcherRef.current || launcherRef.current.children.length > 0) return;
+
+    const launcher = document.createElement("google-cast-launcher");
+    launcherRef.current.appendChild(launcher);
+  }, []);
+
   return (
     <VideoPlayerButton
-      ref={ref}
       className={[
-        props.className ?? "",
+        className ?? "",
         "google-cast-button",
+        "cast-button-container",
         isCasting ? "casting" : "",
-        hidden || castHidden ? "hidden" : "",
+        castHidden ? "hidden" : "",
       ].join(" ")}
-      icon={Icons.CASTING}
-      onClick={(el) => {
-        const castButton = el.querySelector<HTMLElement>(
-          "google-cast-launcher",
-        );
-        if (castButton) castButton.click();
-      }}
     >
-      <google-cast-launcher
-        style={{
-          width: 0,
-          height: 0,
-          opacity: 0,
-          position: "absolute",
-          pointerEvents: "none",
-        }}
-        aria-hidden="true"
-      />
+      <div ref={launcherRef} />
     </VideoPlayerButton>
   );
 }
