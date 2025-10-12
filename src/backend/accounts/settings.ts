@@ -28,6 +28,7 @@ export interface SettingsInput {
   enableNativeSubtitles?: boolean;
   enableHoldToBoost?: boolean;
   manualSourceSelection?: boolean;
+  enableDoubleClickToSeek?: boolean;
 }
 
 export interface SettingsResponse {
@@ -54,6 +55,7 @@ export interface SettingsResponse {
   enableNativeSubtitles?: boolean;
   enableHoldToBoost?: boolean;
   manualSourceSelection?: boolean;
+  enableDoubleClickToSeek?: boolean;
 }
 
 export function updateSettings(

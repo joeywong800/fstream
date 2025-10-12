@@ -33,6 +33,8 @@ export function PreferencesPart(props: {
   setEnableHoldToBoost: (v: boolean) => void;
   manualSourceSelection: boolean;
   setManualSourceSelection: (v: boolean) => void;
+  enableDoubleClickToSeek: boolean;
+  setEnableDoubleClickToSeek: (v: boolean) => void;
 }) {
   const { t } = useTranslation();
   const sorted = sortLangCodes(appLanguageOptions.map((item) => item.code));
@@ -215,6 +217,26 @@ export function PreferencesPart(props: {
                 {t("settings.preferences.holdToBoostLabel")}
               </p>
             </div>
+          </div>
+        </div>
+        {/* double click to seek preference */}
+        <div>
+          <p className="text-white font-bold mb-3">
+            {t("settings.preferences.doubleClickToSeek")}
+          </p>
+          <p className="max-w-[25rem] font-medium">
+            {t("settings.preferences.doubleClickToSeekDescription")}
+          </p>
+          <div
+            onClick={() =>
+              props.setEnableDoubleClickToSeek(!props.enableDoubleClickToSeek)
+            }
+            className="bg-dropdown-background hover:bg-dropdown-hoverBackground select-none my-4 cursor-pointer space-x-3 flex items-center max-w-[25rem] py-3 px-4 rounded-lg"
+          >
+            <Toggle enabled={props.enableDoubleClickToSeek} />
+            <p className="flex-1 text-white font-bold">
+              {t("settings.preferences.doubleClickToSeekLabel")}
+            </p>
           </div>
         </div>
 

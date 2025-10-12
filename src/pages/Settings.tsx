@@ -207,6 +207,13 @@ export function SettingsPage() {
     (s) => s.setManualSourceSelection,
   );
 
+  const enableDoubleClickToSeek = usePreferencesStore(
+    (s) => s.enableDoubleClickToSeek,
+  );
+  const setEnableDoubleClickToSeek = usePreferencesStore(
+    (s) => s.setEnableDoubleClickToSeek,
+  );
+
   const account = useAuthStore((s) => s.account);
   const updateProfile = useAuthStore((s) => s.setAccountProfile);
   const updateDeviceName = useAuthStore((s) => s.updateDeviceName);
@@ -261,6 +268,7 @@ export function SettingsPage() {
     enableHoldToBoost,
     homeSectionOrder,
     manualSourceSelection,
+    enableDoubleClickToSeek,
   );
 
   const availableSources = useMemo(() => {
@@ -320,7 +328,8 @@ export function SettingsPage() {
         state.forceCompactEpisodeView.changed ||
         state.enableLowPerformanceMode.changed ||
         state.enableHoldToBoost.changed ||
-        state.manualSourceSelection.changed
+        state.manualSourceSelection.changed ||
+        state.enableDoubleClickToSeek
       ) {
         await updateSettings(backendUrl, account, {
           applicationLanguage: state.appLanguage.state,
@@ -343,6 +352,7 @@ export function SettingsPage() {
           enableLowPerformanceMode: state.enableLowPerformanceMode.state,
           enableHoldToBoost: state.enableHoldToBoost.state,
           manualSourceSelection: state.manualSourceSelection.state,
+          enableDoubleClickToSeek: state.enableDoubleClickToSeek.state,
         });
       }
       if (state.deviceName.changed) {
@@ -385,6 +395,7 @@ export function SettingsPage() {
     setEnableHoldToBoost(state.enableHoldToBoost.state);
     setHomeSectionOrder(state.homeSectionOrder.state);
     setManualSourceSelection(state.manualSourceSelection.state);
+    setEnableDoubleClickToSeek(state.enableDoubleClickToSeek.state);
 
     if (state.profile.state) {
       updateProfile(state.profile.state);
@@ -431,6 +442,7 @@ export function SettingsPage() {
     setEnableHoldToBoost,
     setHomeSectionOrder,
     setManualSourceSelection,
+    setEnableDoubleClickToSeek,
   ]);
   return (
     <SubPageLayout>
@@ -485,6 +497,8 @@ export function SettingsPage() {
             setEnableHoldToBoost={state.enableHoldToBoost.set}
             manualSourceSelection={state.manualSourceSelection.state}
             setManualSourceSelection={state.manualSourceSelection.set}
+            enableDoubleClickToSeek={state.enableDoubleClickToSeek.state}
+            setEnableDoubleClickToSeek={state.enableDoubleClickToSeek.set}
           />
         </div>
         <div id="settings-appearance" className="mt-28">

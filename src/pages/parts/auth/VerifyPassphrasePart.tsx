@@ -56,6 +56,8 @@ export function VerifyPassphrase(props: VerifyPassphraseProps) {
     febboxKey: store.febboxKey,
     enableLowPerformanceMode: store.enableLowPerformanceMode,
     enableNativeSubtitles: store.enableNativeSubtitles,
+    enableDoubleClickToSeek: store.enableDoubleClickToSeek,
+    manualSourceSelection: store.manualSourceSelection,
   }));
 
   const backendUrl = useBackendUrl();
