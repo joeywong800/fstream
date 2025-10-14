@@ -10,24 +10,34 @@ export interface FlareProps {
   enabled?: boolean;
   gradientOpacity?: number;
   gradientSpread?: number;
+  style?: React.CSSProperties;
+  [key: string]: any;
 }
 
 const SIZE_DEFAULT = 200;
 const CSS_VAR_DEFAULT = "--colors-global-accentA";
 
-function Base(props: {
+function Base({
+  className,
+  children,
+  tabIndex,
+  onKeyUp,
+  ...props
+}: {
   className?: string;
   children?: ReactNode;
   tabIndex?: number;
   onKeyUp?: (e: React.KeyboardEvent<HTMLDivElement>) => void;
+  [key: string]: any;
 }) {
   return (
     <div
-      tabIndex={props.tabIndex}
-      className={c(props.className, "relative")}
-      onKeyUp={props.onKeyUp}
+      tabIndex={tabIndex}
+      className={c(className, "relative")}
+      onKeyUp={onKeyUp}
+      {...props}
     >
-      {props.children}
+      {children}
     </div>
   );
 }
@@ -62,6 +72,8 @@ function Light(props: FlareProps) {
     return () => document.removeEventListener("mousemove", mouseMove);
   }, [size]);
 
+  const { style: customStyle, ...restProps } = props;
+
   return (
     <div
       ref={outerRef}
@@ -78,6 +90,7 @@ function Light(props: FlareProps) {
         backgroundRepeat: "no-repeat",
         backgroundSize: `${size.toFixed(0)}px ${size.toFixed(0)}px`,
       }}
+      {...restProps}
     >
       <div
         className={c(
@@ -85,6 +98,7 @@ function Light(props: FlareProps) {
           props.className,
           props.backgroundClass,
         )}
+        style={customStyle}
       >
         <div
           className="absolute inset-0 opacity-10"
