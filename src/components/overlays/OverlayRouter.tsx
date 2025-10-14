@@ -89,6 +89,7 @@ function RouterBase(props: { id: string; children: ReactNode }) {
             backgroundImage: "url(/grainy.svg)",
             backgroundBlendMode: "overlay",
             backgroundSize: "200px 200px",
+            filter: "contrast(105%) brightness(120%)",
           }}
         />
         <Flare.Child className="pointer-events-auto relative transition-transform duration-100 h-full">
