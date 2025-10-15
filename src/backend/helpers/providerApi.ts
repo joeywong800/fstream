@@ -2,7 +2,7 @@ import { MetaOutput, NotFoundError, ScrapeMedia } from "@p-stream/providers";
 import { jwtDecode } from "jwt-decode";
 
 import { mwFetch } from "@/backend/helpers/fetch";
-import { getTurnstileToken, isTurnstileInitialized } from "@/stores/turnstile";
+import { getTurnstileToken } from "@/stores/turnstile";
 
 let metaDataCache: MetaOutput[] | null = null;
 let token: null | string = null;
@@ -98,8 +98,12 @@ export function makeProviderUrl(base: string) {
 
 export async function getApiToken(): Promise<string | null> {
   let apiToken = getTokenIfValid();
-  if (!apiToken && isTurnstileInitialized()) {
-    apiToken = `turnstile|${await getTurnstileToken()}`;
+  if (!apiToken) {
+    try {
+      apiToken = `turnstile|${await getTurnstileToken()}`;
+    } catch {
+      // No turnstile token available, proceed without it
+    }
   }
   return apiToken;
 }
