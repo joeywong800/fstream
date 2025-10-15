@@ -137,7 +137,7 @@ export function MediaCarousel({
     }));
 
   // Set up intersection observer for lazy loading
-  const { targetRef, isIntersecting } = useIntersectionObserver({
+  const { targetRef, hasIntersected } = useIntersectionObserver({
     rootMargin: "300px",
   });
 
@@ -331,7 +331,7 @@ export function MediaCarousel({
   ]);
 
   // Loading state
-  if (!isIntersecting || !sectionTitle) {
+  if (!hasIntersected || !sectionTitle) {
     return (
       <div ref={targetRef as React.RefObject<HTMLDivElement>}>
         <div className="flex items-center justify-between ml-2 md:ml-8 mt-2">
