@@ -1,5 +1,6 @@
 /// <reference types="chromecast-caf-sender" />
 // idk why but it seems useless
+// btw i will review this again if i ever get bored enough again if aint working which is likely to happen! <3
 import fscreen from "fscreen";
 
 import { MWMediaType } from "@/backend/metadata/types/mw";
@@ -169,7 +170,6 @@ export function makeChromecastDisplayInterface(
         type: "global",
         errorName: "no_cast_session",
         message: "No active Cast session",
-        displayHint: "",
       });
       return;
     }
@@ -186,7 +186,6 @@ export function makeChromecastDisplayInterface(
           type: "global",
           errorName: "chromecast_load_failure",
           message: (err as Error)?.message || String(err),
-          displayHint: "",
         });
       });
   };
