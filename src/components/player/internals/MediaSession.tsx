@@ -139,7 +139,6 @@ export function MediaSession() {
     navigator.mediaSession.setActionHandler("pause", () => {
       if (data.mediaPlaying.isLoading) return;
       data.display?.pause();
-
       updatePositionState(data.progress.time);
     });
 

@@ -246,7 +246,6 @@ export function makeChromecastDisplayInterface(
     },
 
     processVideoElement(video) {
-      destroyVideoElement();
       videoElement = video;
       setSource();
     },
