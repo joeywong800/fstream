@@ -1,5 +1,5 @@
-/// <reference types="chromecast-caf-sender"/>
-
+/// <reference types="chromecast-caf-sender" />
+// idk why but it seems useless
 import fscreen from "fscreen";
 
 import { MWMediaType } from "@/backend/metadata/types/mw";
@@ -21,133 +21,126 @@ export interface ChromeCastDisplayInterfaceOptions {
   instance: cast.framework.CastContext;
 }
 
-/*
- ** Chromecasting is unfinished, here is its limitations:
- **  1. Captions - chromecast requires only VTT, but needs it from a URL. we only have SRT urls
- **  2. HLS - we've having some issues with content types. sometimes it loads, sometimes it doesn't
- */
-
 export function makeChromecastDisplayInterface(
   ops: ChromeCastDisplayInterfaceOptions,
 ): DisplayInterface {
   const { emit, on, off } = makeEmitter<DisplayInterfaceEvents>();
+
   let isPaused = false;
   let playbackRate = 1;
   let source: LoadableSource | null = null;
   let videoElement: HTMLVideoElement | null = null;
   let containerElement: HTMLElement | null = null;
   let isFullscreen = false;
-  let isPausedBeforeSeeking = false;
   let isSeeking = false;
   let startAt = 0;
   let meta: DisplayMeta = {
     title: "",
     type: MWMediaType.MOVIE,
   };
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let caption: DisplayCaption | null = null;
 
-  function listenForEvents() {
-    const listen = (e: cast.framework.RemotePlayerChangedEvent) => {
-      switch (e.field) {
-        case "volumeLevel":
-          emit("volumechange", e.value);
-          break;
-        case "currentTime":
-          emit("time", e.value);
-          break;
-        case "duration":
-          emit("duration", e.value ?? 0);
-          break;
-        case "mediaInfo":
-          if (e.value) emit("duration", e.value.duration ?? 0);
-          break;
-        case "playerState":
-          emit("loading", e.value === "BUFFERING");
-          if (e.value === "PLAYING") emit("play", undefined);
-          else if (e.value === "PAUSED") emit("pause", undefined);
-          isPaused = e.value === "PAUSED";
-          break;
-        case "isMuted":
-          emit("volumechange", e.value ? 0 : ops.player.volumeLevel);
-          break;
-        case "displayStatus":
-        case "canSeek":
-        case "title":
-        case "isPaused":
-        case "canPause":
-        case "isMediaLoaded":
-        case "statusText":
-        case "isConnected":
-        case "displayName":
-        case "canControlVolume":
-        case "savedPlayerState":
-          break;
-        default:
-          break;
-      }
-    };
-    ops.controller?.addEventListener(
-      cast.framework.RemotePlayerEventType.ANY_CHANGE,
-      listen,
-    );
-    return () => {
-      ops.controller?.removeEventListener(
-        cast.framework.RemotePlayerEventType.ANY_CHANGE,
-        listen,
-      );
-    };
-  }
+  const handlePlayerChange = (e: cast.framework.RemotePlayerChangedEvent) => {
+    switch (e.field) {
+      case "volumeLevel":
+        emit("volumechange", e.value);
+        break;
+      case "currentTime":
+        if (!isSeeking) emit("time", e.value);
+        break;
+      case "duration":
+      case "mediaInfo":
+        emit("duration", e.value?.duration ?? e.value ?? 0);
+        break;
+      case "playerState": {
+        const isLoading = e.value === "BUFFERING";
+        const isPlaying = e.value === "PLAYING";
+        const isNowPaused = e.value === "PAUSED";
 
-  function setupSource() {
+        emit("loading", isLoading);
+        if (isPlaying) emit("play", undefined);
+        if (isNowPaused) emit("pause", undefined);
+
+        isPaused = isNowPaused;
+        break;
+      }
+      case "isMuted":
+        emit("volumechange", e.value ? 0 : ops.player.volumeLevel);
+        break;
+      default:
+        break;
+    }
+  };
+
+  ops.controller?.addEventListener(
+    cast.framework.RemotePlayerEventType.ANY_CHANGE,
+    handlePlayerChange,
+  );
+
+  const stopListening = () => {
+    ops.controller?.removeEventListener(
+      cast.framework.RemotePlayerEventType.ANY_CHANGE,
+      handlePlayerChange,
+    );
+  };
+
+  const loadMedia = () => {
     if (!source) {
       ops.controller?.stop();
       return;
     }
 
-    let type = "video/mp4";
-    if (source.type === "hls") type = "application/x-mpegurl";
+    let mimeType = "video/mp4";
+    if (source.type === "hls") mimeType = "application/x-mpegurl";
 
-    const metaData = new chrome.cast.media.GenericMediaMetadata();
-    metaData.title = meta.title;
+    const contentUrl = processCdnLink(source.url);
+    let finalUrl = contentUrl;
 
-    let contentUrl = processCdnLink(source.url);
-
-    // When casting HLS, use an enabled M3U8 proxy so the Chromecast device can fetch the manifest
     if (source.type === "hls") {
       try {
-        const all = conf().M3U8_PROXY_URLS;
-        let enabledMap: Record<string, boolean> = {};
+        const allProxies = conf().M3U8_PROXY_URLS;
         const enabledRaw = localStorage.getItem("m3u8-proxy-enabled");
+        let enabledMap: Record<string, boolean> = {};
         if (enabledRaw) {
           try {
-            enabledMap = JSON.parse(enabledRaw) as Record<string, boolean>;
+            enabledMap = JSON.parse(enabledRaw);
           } catch {
-            enabledMap = {};
+            /* ignore */
           }
         }
-        const enabled = all.filter(
-          (_url, idx) => enabledMap[idx.toString()] !== false,
+        const enabled = allProxies.filter(
+          (_, idx) => enabledMap[idx.toString()] !== false,
         );
-        const list = enabled.length > 0 ? enabled : all;
-        if (list.length > 0) {
-          const base = list[Math.floor(Math.random() * list.length)];
-          const trimmed = base.endsWith("/") ? base.slice(0, -1) : base;
-          contentUrl = `${trimmed}/?destination=${encodeURIComponent(contentUrl)}`;
+        const proxies = enabled.length > 0 ? enabled : allProxies;
+        if (proxies.length > 0) {
+          const base = proxies[Math.floor(Math.random() * proxies.length)];
+          const cleanBase = base.endsWith("/") ? base.slice(0, -1) : base;
+          finalUrl = `${cleanBase}/?destination=${encodeURIComponent(contentUrl)}`;
         }
-      } catch {
-        // If anything goes wrong, fall back to direct URL
+      } catch (err) {
+        console.warn(
+          "Chromecast: M3U8 proxy setup failed, using direct URL",
+          err,
+        );
       }
     }
 
-    const mediaInfo = new chrome.cast.media.MediaInfo(contentUrl, type);
+    const mediaInfo = new chrome.cast.media.MediaInfo(finalUrl, mimeType);
     mediaInfo.streamType = chrome.cast.media.StreamType.BUFFERED;
-    mediaInfo.metadata = metaData;
-    mediaInfo.customData = {
-      playbackRate,
-    };
+    mediaInfo.customData = { playbackRate };
 
-    // Add basic VTT captions support if a caption URL is provided
+    const metaData = new chrome.cast.media.GenericMediaMetadata();
+    metaData.title = meta.title || "P-Stream";
+
+    try {
+      const logoUrl = new URL("/favicon.ico?v=2", window.location.origin).href;
+      metaData.images = [new chrome.cast.Image(logoUrl)];
+    } catch (err) {
+      console.warn("Chromecast: Could not attach logo to metadata", err);
+    }
+
+    mediaInfo.metadata = metaData;
+
     if (caption?.url) {
       try {
         const textTrack = new chrome.cast.media.Track(
@@ -156,12 +149,12 @@ export function makeChromecastDisplayInterface(
         );
         textTrack.trackContentType = "text/vtt";
         textTrack.trackContentId = caption.url;
-        textTrack.language = caption.language;
+        textTrack.language = caption.language || "en";
         textTrack.name = caption.language || "Subtitles";
         textTrack.subtype = chrome.cast.media.TextTrackType.SUBTITLES;
         mediaInfo.tracks = [textTrack];
-      } catch {
-        // ignore track creation errors
+      } catch (err) {
+        console.warn("Chromecast: Failed to create caption track", err);
       }
     }
 
@@ -171,92 +164,93 @@ export function makeChromecastDisplayInterface(
     if (caption?.url) request.activeTrackIds = [1];
 
     const session = ops.instance.getCurrentSession();
+    if (!session) {
+      emit("error", {
+        type: "global",
+        errorName: "no_cast_session",
+        message: "No active Cast session",
+        displayHint: "",
+      });
+      return;
+    }
+
     session
-      ?.loadMedia(request)
+      .loadMedia(request)
       .then(() => {
         emit("loading", false);
       })
       .catch((err: unknown) => {
+        console.error("Chromecast loadMedia failed:", err);
         emit("loading", false);
         emit("error", {
           type: "global",
           errorName: "chromecast_load_failure",
-          message: (err as any)?.message ?? String(err),
+          message: (err as Error)?.message || String(err),
+          displayHint: "",
         });
       });
-  }
+  };
 
-  function setSource() {
-    if (!source) return;
-    setupSource();
-  }
+  const updateCaption = (newCaption: DisplayCaption | null) => {
+    caption = newCaption;
+    const session = ops.instance.getCurrentSession();
+    const media = session?.getMediaSession();
 
-  function destroyVideoElement() {
-    if (videoElement) videoElement = null;
-  }
+    if (media && newCaption?.url) {
+      try {
+        const req = new chrome.cast.media.EditTracksInfoRequest([1]);
+        (media as any).editTracksInfo(req);
+        return;
+      } catch (err) {
+        console.warn("Chromecast: editTracksInfo failed, reloading media", err);
+      }
+    }
+    if (source) loadMedia();
+  };
 
-  function fullscreenChange() {
+  const handleFullscreenChange = () => {
     isFullscreen =
-      !!document.fullscreenElement || // other browsers
-      !!(document as any).webkitFullscreenElement; // safari
+      !!document.fullscreenElement ||
+      !!(document as any).webkitFullscreenElement;
     emit("fullscreen", isFullscreen);
     if (!isFullscreen) emit("needstrack", false);
-  }
-  fscreen.addEventListener("fullscreenchange", fullscreenChange);
+  };
 
-  // start listening immediately
-  const stopListening = listenForEvents();
+  fscreen.addEventListener("fullscreenchange", handleFullscreenChange);
 
-  return {
+  const api: DisplayInterface = {
     on,
     off,
     getType() {
       return "casting";
     },
-    destroy: () => {
+    destroy() {
       stopListening();
-      destroyVideoElement();
-      fscreen.removeEventListener("fullscreenchange", fullscreenChange);
+      fscreen.removeEventListener("fullscreenchange", handleFullscreenChange);
+      videoElement = null;
+      containerElement = null;
     },
-    load(loadOps) {
-      source = loadOps.source;
+    load({ source: newSource, startAt: time }) {
+      source = newSource;
+      startAt = time ?? 0;
       emit("loading", true);
-      startAt = loadOps.startAt;
-      setSource();
+      loadMedia();
     },
     changeQuality() {
-      // cant control qualities
+      // Not supported
     },
-    setCaption(newCaption) {
-      caption = newCaption;
-      // If a session and media exist, toggle active track IDs without reloading
-      const session = ops.instance.getCurrentSession();
-      const media = session?.getMediaSession();
-      try {
-        if (media) {
-          const ids = newCaption?.url ? [1] : [];
-          const req = new chrome.cast.media.EditTracksInfoRequest(ids);
-          (media as any).editTracksInfo(req);
-          return;
-        }
-      } catch {
-        // Fallback to reload if needed
-      }
-      setSource();
-    },
-
+    setCaption: updateCaption,
     processVideoElement(video) {
       videoElement = video;
-      setSource();
+      if (source) loadMedia();
     },
     processContainerElement(container) {
       containerElement = container;
     },
-    setMeta(data) {
-      meta = data;
-      setSource();
+    setMeta(newMeta) {
+      meta = newMeta;
+      if (source) loadMedia();
     },
-
     pause() {
       if (!ops.player.isPaused) {
         ops.controller.playOrPause();
@@ -270,66 +264,53 @@ export function makeChromecastDisplayInterface(
     setSeeking(active) {
       if (active === isSeeking) return;
       isSeeking = active;
-
-      // if it was playing when starting to seek, play again
-      if (!active) {
-        if (!isPausedBeforeSeeking) this.play();
-        return;
+      if (active) {
+        isPaused = ops.player.isPaused;
+        this.pause();
+      } else if (!isPaused) {
+        this.play();
       }
-
-      isPausedBeforeSeeking = isPaused ?? true;
-      this.pause();
     },
-    setTime(t) {
-      // clamp time between 0 and max duration if duration is known
-      let time = t;
-      if (!Number.isNaN(ops.player.duration)) {
-        time = Math.min(t, ops.player.duration);
-        time = Math.max(0, time);
-      }
-
+    setTime(time) {
       if (Number.isNaN(time)) return;
-      emit("time", time);
-      ops.player.currentTime = time;
+      const clamped = Math.max(
+        0,
+        Math.min(time, ops.player.duration || Infinity),
+      );
+      ops.player.currentTime = clamped;
       ops.controller.seek();
+      emit("time", clamped);
     },
-    async setVolume(v) {
-      // clamp volume between 0 and 1
-      let volume = Math.min(v, 1);
-      volume = Math.max(0, volume);
-
-      // Always control remote cast volume regardless of local platform restrictions
-      ops.player.volumeLevel = volume;
+    async setVolume(volume) {
+      const clamped = Math.min(1, Math.max(0, volume));
+      ops.player.volumeLevel = clamped;
       ops.controller.setVolumeLevel();
-      emit("volumechange", volume);
+      emit("volumechange", clamped);
     },
     toggleFullscreen() {
       if (isFullscreen) {
         isFullscreen = false;
-        emit("fullscreen", isFullscreen);
+        emit("fullscreen", false);
         emit("needstrack", false);
-        if (!fscreen.fullscreenElement) return;
-        fscreen.exitFullscreen();
+        if (fscreen.fullscreenElement) fscreen.exitFullscreen();
         return;
       }
 
-      // enter fullscreen
-      isFullscreen = true;
-      emit("fullscreen", isFullscreen);
       if (!canFullscreen() || fscreen.fullscreenElement) return;
-      if (canFullscreenAnyElement()) {
-        if (containerElement) fscreen.requestFullscreen(containerElement);
+
+      isFullscreen = true;
+      emit("fullscreen", true);
+      if (canFullscreenAnyElement() && containerElement) {
+        fscreen.requestFullscreen(containerElement);
       }
     },
     togglePictureInPicture() {
-      // Can't PIP while Chromecasting
+      // Not supported during casting
     },
     startAirplay() {
-      // cant airplay while chromecasting
+      // Not supported
     },
     setPlaybackRate(rate) {
-      // Default Media Receiver does not support changing playback rate dynamically.
-      // Store locally and notify UI without reloading media.
       playbackRate = rate;
       emit("playbackrate", rate);
     },
@@ -343,7 +324,9 @@ export function makeChromecastDisplayInterface(
       return Promise.resolve();
     },
     changeAudioTrack() {
-      // cant change audio tracks
+      // Not supported
     },
   };
+
+  return api;
 }
