@@ -1,4 +1,6 @@
 import { Turnstile } from "@marsidev/react-turnstile";
+import classNames from "classnames";
+import { useRef } from "react";
 import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
 
@@ -6,16 +8,27 @@ import { reportCaptchaSolve } from "@/backend/helpers/report";
 import { conf } from "@/setup/config";
 
 export interface TurnstileStore {
+  isInWidget: boolean;
+  turnstiles: {
+    controls: any;
+    isInPopout: boolean;
+    id: string;
+  }[];
   cbs: ((token: string | null) => void)[];
+  setTurnstile(id: string, v: any, isInPopout: boolean): void;
   getToken(): Promise<string>;
-  processToken(token: string | null): void;
+  processToken(token: string | null, widgetId: string): void;
 }
 
 export const useTurnstileStore = create(
   immer<TurnstileStore>((set, get) => ({
+    isInWidget: false,
+    turnstiles: [],
     cbs: [],
-    processToken(token) {
+    processToken(token, widgetId) {
       const cbs = get().cbs;
+      const turnstile = get().turnstiles.find((v) => v.id === widgetId);
+      if (turnstile?.id !== widgetId) return;
       cbs.forEach((fn) => fn(token));
       set((s) => {
         s.cbs = [];
@@ -34,8 +47,31 @@ export const useTurnstileStore = create(
         });
       });
     },
+    setTurnstile(id, controls, isInPopout) {
+      set((s) => {
+        s.turnstiles = s.turnstiles.filter((v) => v.id !== id);
+        if (controls) {
+          s.turnstiles.push({
+            controls,
+            isInPopout,
+            id,
+          });
+        }
+      });
+    },
   })),
 );
+
+export function getTurnstile() {
+  const turnstiles = useTurnstileStore.getState().turnstiles;
+  const inPopout = turnstiles.find((v) => v.isInPopout);
+  if (inPopout) return inPopout;
+  return turnstiles[0];
+}
+
+export function isTurnstileInitialized() {
+  return !!getTurnstile();
+}
 
 export async function getTurnstileToken() {
   try {
@@ -49,23 +85,46 @@ export async function getTurnstileToken() {
   }
 }
 
-export function TurnstileProvider() {
+export function TurnstileProvider(props: {
+  isInPopout?: boolean;
+  onUpdateShow?: (show: boolean) => void;
+}) {
   const siteKey = conf().TURNSTILE_KEY;
+  const idRef = useRef<string | null>(null);
+  const setTurnstile = useTurnstileStore((s) => s.setTurnstile);
   const processToken = useTurnstileStore((s) => s.processToken);
   if (!siteKey) return null;
   return (
-    <Turnstile
-      siteKey={siteKey}
-      options={{
-        refreshExpired: "auto",
-        theme: "dark",
-      }}
-      onError={() => {
-        processToken(null);
-      }}
-      onSuccess={(token) => {
-        processToken(token);
-      }}
-    />
+    <div
+      className={classNames({
+        hidden: !props.isInPopout,
+      })}
+    >
+      <Turnstile
+        siteKey={siteKey}
+        options={{
+          refreshExpired: "never",
+          theme: "light",
+        }}
+        onWidgetLoad={(widgetId) => {
+          idRef.current = widgetId;
+          setTurnstile(widgetId, "mwturnstile", !!props.isInPopout);
+        }}
+        onError={() => {
+          const id = idRef.current;
+          if (!id) return;
+          processToken(null, id);
+        }}
+        onSuccess={(token) => {
+          const id = idRef.current;
+          if (!id) return;
+          processToken(token, id);
+          props.onUpdateShow?.(false);
+        }}
+        onBeforeInteractive={() => {
+          props.onUpdateShow?.(true);
+        }}
+      />
+    </div>
   );
 }

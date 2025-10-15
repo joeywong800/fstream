@@ -23,8 +23,6 @@ import { ResumePart } from "@/pages/parts/player/ResumePart";
 import { ScrapeErrorPart } from "@/pages/parts/player/ScrapeErrorPart";
 import { ScrapingPart } from "@/pages/parts/player/ScrapingPart";
 import { SourceSelectPart } from "@/pages/parts/player/SourceSelectPart";
-import { TurnstilePart } from "@/pages/parts/player/TurnstilePart";
-import { conf } from "@/setup/config";
 import { useLastNonPlayerLink } from "@/stores/history";
 import { PlayerMeta, playerStatus } from "@/stores/player/slices/source";
 import { usePreferencesStore } from "@/stores/preferences";
@@ -43,9 +41,6 @@ export function RealPlayerView() {
     sources: Record<string, ScrapingSegment>;
     sourceOrder: ScrapingItems[];
   } | null>(null);
-  const [turnstileVerified, setTurnstileVerified] = useState(
-    () => !conf().TURNSTILE_KEY,
-  );
   const [startAtParam] = useQueryParam("t");
   const {
     status,
@@ -72,8 +67,6 @@ export function RealPlayerView() {
   });
   useEffect(() => {
     reset();
-    // Reset turnstile verification state when media changes
-    setTurnstileVerified(!conf().TURNSTILE_KEY);
     // Reset watch party state when media changes
     openedWatchPartyRef.current = false;
   }, [paramsData, reset]);
@@ -176,10 +169,7 @@ export function RealPlayerView() {
 
   return (
     <PlayerPart backUrl={backUrl} onMetaChange={metaChange}>
-      {!turnstileVerified ? (
-        <TurnstilePart onVerified={() => setTurnstileVerified(true)} />
-      ) : null}
-      {turnstileVerified && status === playerStatus.IDLE ? (
+      {status === playerStatus.IDLE ? (
         <MetaPart onGetMeta={handleMetaReceived} />
       ) : null}
       {status === playerStatus.RESUME ? (
