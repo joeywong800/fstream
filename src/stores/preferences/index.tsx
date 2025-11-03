@@ -52,6 +52,9 @@ export interface PreferencesStore {
   setHomeSectionOrder(v: string[]): void;
   setManualSourceSelection(v: boolean): void;
   setEnableDoubleClickToSeek(v: boolean): void;
+  // Map of show TMDB id -> last successful source (provider) id
+  lastUsedSourceByShow?: Record<string, string>;
+  setLastUsedSourceForShow?(tmdbId: string, sourceId: string): void;
 }
 
 export const usePreferencesStore = create(
@@ -81,6 +84,7 @@ export const usePreferencesStore = create(
       homeSectionOrder: ["watching", "bookmarks"],
       manualSourceSelection: false,
       enableDoubleClickToSeek: false,
+  lastUsedSourceByShow: {},
       setEnableThumbnails(v) {
         set((s) => {
           s.enableThumbnails = v;
@@ -204,6 +208,12 @@ export const usePreferencesStore = create(
       setEnableDoubleClickToSeek(v) {
         set((s) => {
           s.enableDoubleClickToSeek = v;
+        });
+      },
+      setLastUsedSourceForShow(tmdbId, sourceId) {
+        set((s) => {
+          if (!s.lastUsedSourceByShow) s.lastUsedSourceByShow = {} as Record<string, string>;
+          s.lastUsedSourceByShow[tmdbId] = sourceId;
         });
       },
     })),

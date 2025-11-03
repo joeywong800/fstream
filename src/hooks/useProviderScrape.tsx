@@ -162,10 +162,48 @@ export function useScrape() {
 
   const startScraping = useCallback(
     async (media: ScrapeMedia) => {
+      // Build a base source order (either user-defined or default metadata order)
+      let baseSourceOrder: string[] | undefined;
+      if (enableSourceOrder && preferredSourceOrder.length > 0) {
+        baseSourceOrder = [...preferredSourceOrder];
+      } else {
+        // Fallback to default order from provider metadata
+        try {
+          baseSourceOrder = getCachedMetadata().map((s) => s.id);
+        } catch {
+          baseSourceOrder = undefined;
+        }
+      }
+
       // Filter out disabled sources from the source order
-      const filteredSourceOrder = enableSourceOrder
-        ? preferredSourceOrder.filter((id) => !disabledSources.includes(id))
+      let filteredSourceOrder = baseSourceOrder
+        ? baseSourceOrder.filter((id) => !disabledSources.includes(id))
         : undefined;
+
+      // If this is a show and we have a last-used source for it, prioritize it first
+      if (media.type === "show") {
+        const lastUsed = usePreferencesStore.getState().lastUsedSourceByShow?.[
+          media.tmdbId
+        ];
+        if (
+          lastUsed &&
+          !disabledSources.includes(lastUsed)
+        ) {
+          if (filteredSourceOrder && filteredSourceOrder.length > 0) {
+            if (filteredSourceOrder.includes(lastUsed)) {
+              filteredSourceOrder = [
+                lastUsed,
+                ...filteredSourceOrder.filter((id) => id !== lastUsed),
+              ];
+            } else {
+              // If not present (e.g., metadata mismatch), preprend and let backend skip if unsupported
+              filteredSourceOrder = [lastUsed, ...filteredSourceOrder];
+            }
+          } else {
+            filteredSourceOrder = [lastUsed];
+          }
+        }
+      }
 
       // Filter out disabled embeds from the embed order
       const filteredEmbedOrder = enableEmbedOrder
@@ -199,7 +237,7 @@ export function useScrape() {
       const providers = getProviders();
       const output = await providers.runAll({
         media,
-        // Only pass sourceOrder if enableSourceOrder is true, and filter out disabled sources
+        // Always pass computed source order so we can prioritize last-used provider
         sourceOrder: filteredSourceOrder,
         // Only pass embedOrder if enableEmbedOrder is true
         embedOrder: filteredEmbedOrder,

@@ -9,6 +9,7 @@ import {
 } from "@/stores/player/utils/qualities";
 import { useQualityStore } from "@/stores/quality";
 import { ValuesOf } from "@/utils/typeguard";
+import { usePreferencesStore } from "@/stores/preferences";
 
 export const playerStatus = {
   IDLE: "idle",
@@ -150,6 +151,16 @@ export const createSourceSlice: MakeSlice<SourceSlice> = (set, get) => ({
       s.status = playerStatus.PLAYING;
       s.sourceId = id;
     });
+    // Persist last successful provider for shows, to prioritize on next episode
+    try {
+      const store = get();
+      if (id && store.meta?.type === "show" && store.meta.tmdbId) {
+        const prefs = usePreferencesStore.getState();
+        prefs.setLastUsedSourceForShow?.(store.meta.tmdbId, id);
+      }
+    } catch (e) {
+      // noop
+    }
   },
   setEmbedId(id) {
     set((s) => {
