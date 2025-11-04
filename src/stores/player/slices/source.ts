@@ -7,9 +7,9 @@ import {
   SourceSliceSource,
   selectQuality,
 } from "@/stores/player/utils/qualities";
+import { usePreferencesStore } from "@/stores/preferences";
 import { useQualityStore } from "@/stores/quality";
 import { ValuesOf } from "@/utils/typeguard";
-import { usePreferencesStore } from "@/stores/preferences";
 
 export const playerStatus = {
   IDLE: "idle",

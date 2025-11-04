@@ -182,13 +182,9 @@ export function useScrape() {
 
       // If this is a show and we have a last-used source for it, prioritize it first
       if (media.type === "show") {
-        const lastUsed = usePreferencesStore.getState().lastUsedSourceByShow?.[
-          media.tmdbId
-        ];
-        if (
-          lastUsed &&
-          !disabledSources.includes(lastUsed)
-        ) {
+        const lastUsed =
+          usePreferencesStore.getState().lastUsedSourceByShow?.[media.tmdbId];
+        if (lastUsed && !disabledSources.includes(lastUsed)) {
           if (filteredSourceOrder && filteredSourceOrder.length > 0) {
             if (filteredSourceOrder.includes(lastUsed)) {
               filteredSourceOrder = [

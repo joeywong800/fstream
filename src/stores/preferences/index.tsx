@@ -84,7 +84,7 @@ export const usePreferencesStore = create(
       homeSectionOrder: ["watching", "bookmarks"],
       manualSourceSelection: false,
       enableDoubleClickToSeek: false,
-  lastUsedSourceByShow: {},
+      lastUsedSourceByShow: {},
       setEnableThumbnails(v) {
         set((s) => {
           s.enableThumbnails = v;
@@ -212,7 +212,9 @@ export const usePreferencesStore = create(
       },
       setLastUsedSourceForShow(tmdbId, sourceId) {
         set((s) => {
-          if (!s.lastUsedSourceByShow) s.lastUsedSourceByShow = {} as Record<string, string>;
+          if (!s.lastUsedSourceByShow) {
+            s.lastUsedSourceByShow = {} as Record<string, string>;
+          }
           s.lastUsedSourceByShow[tmdbId] = sourceId;
         });
       },
