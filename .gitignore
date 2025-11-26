@@ -20,7 +20,7 @@ dev-dist
 .env.test.local
 .env.production.local
 
-npm-debug.log*
+*.log
 
 # other package managers
 yarn.lock
