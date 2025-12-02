@@ -16,6 +16,8 @@ import { scrapeRottenTomatoes } from "@/utils/rottenTomatoesScraper";
 import { DetailsContentProps } from "../../types";
 import { EpisodeCarousel } from "../carousels/EpisodeCarousel";
 import { CastCarousel } from "../carousels/PeopleCarousel";
+import { SimilarMediaCarousel } from "../carousels/SimilarMediaCarousel";
+import { TrailerCarousel } from "../carousels/TrailerCarousel";
 import { CollectionOverlay } from "../overlays/CollectionOverlay";
 import { TrailerOverlay } from "../overlays/TrailerOverlay";
 import { DetailsBody } from "../sections/DetailsBody";
@@ -266,7 +268,6 @@ export function DetailsContent({ data, minimal = false }: DetailsContentProps) {
         <DetailsBody
           data={data}
           onPlayClick={handlePlayClick}
-          onTrailerClick={() => setShowTrailer(true)}
           onShareClick={handleShareClick}
           showProgress={showProgress}
           voteAverage={data.voteAverage}
@@ -359,6 +360,46 @@ export function DetailsContent({ data, minimal = false }: DetailsContentProps) {
         {/* Cast Carousel */}
         {data.id && (
           <CastCarousel
+            mediaId={data.id.toString()}
+            mediaType={
+              data.type === "movie"
+                ? TMDBContentTypes.MOVIE
+                : TMDBContentTypes.TV
+            }
+          />
+        )}
+
+        {/* Trailer Carousel */}
+        {data.id && (
+          <TrailerCarousel
+            mediaId={data.id.toString()}
+            mediaType={
+              data.type === "movie"
+                ? TMDBContentTypes.MOVIE
+                : TMDBContentTypes.TV
+            }
+            imdbData={imdbData}
+            onTrailerClick={(videoKey, isImdbTrailer) => {
+              let trailerUrl: string;
+              if (isImdbTrailer) {
+                // IMDb trailer is already a full URL
+                trailerUrl = videoKey;
+              } else {
+                // TMDB trailer needs to be converted to YouTube embed URL
+                trailerUrl = `https://www.youtube.com/embed/${videoKey}?autoplay=1&rel=0`;
+              }
+              setShowTrailer(true);
+              setImdbData((prev: any) => ({
+                ...prev,
+                trailer_url: trailerUrl,
+              }));
+            }}
+          />
+        )}
+
+        {/* Similar Media Carousel */}
+        {data.id && (
+          <SimilarMediaCarousel
             mediaId={data.id.toString()}
             mediaType={
               data.type === "movie"

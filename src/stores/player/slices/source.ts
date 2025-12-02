@@ -90,6 +90,7 @@ export interface SourceSlice {
   };
   meta: PlayerMeta | null;
   failedSources: string[];
+  failedEmbeds: Record<string, string[]>; // sourceId -> array of failed embedIds
   setStatus(status: PlayerStatus): void;
   setSource(
     stream: SourceSliceSource,
@@ -106,7 +107,9 @@ export interface SourceSlice {
   setCaptionAsTrack(asTrack: boolean): void;
   addExternalSubtitles(): Promise<void>;
   addFailedSource(sourceId: string): void;
+  addFailedEmbed(sourceId: string, embedId: string): void;
   clearFailedSources(): void;
+  clearFailedEmbeds(): void;
   reset(): void;
 }
 
@@ -146,6 +149,7 @@ export const createSourceSlice: MakeSlice<SourceSlice> = (set, get) => ({
   status: playerStatus.IDLE,
   meta: null,
   failedSources: [],
+  failedEmbeds: {},
   caption: {
     selected: null,
     asTrack: false,
@@ -154,6 +158,7 @@ export const createSourceSlice: MakeSlice<SourceSlice> = (set, get) => ({
     set((s) => {
       s.status = playerStatus.PLAYING;
       s.sourceId = id;
+      s.embedId = null;
     });
   },
   setEmbedId(id) {
@@ -268,9 +273,24 @@ export const createSourceSlice: MakeSlice<SourceSlice> = (set, get) => ({
       }
     });
   },
+  addFailedEmbed(sourceId: string, embedId: string) {
+    set((s) => {
+      if (!s.failedEmbeds[sourceId]) {
+        s.failedEmbeds[sourceId] = [];
+      }
+      if (!s.failedEmbeds[sourceId].includes(embedId)) {
+        s.failedEmbeds[sourceId] = [...s.failedEmbeds[sourceId], embedId];
+      }
+    });
+  },
   clearFailedSources() {
     set((s) => {
       s.failedSources = [];
+    });
+  },
+  clearFailedEmbeds() {
+    set((s) => {
+      s.failedEmbeds = {};
     });
   },
   reset() {
@@ -287,6 +307,7 @@ export const createSourceSlice: MakeSlice<SourceSlice> = (set, get) => ({
       s.status = playerStatus.IDLE;
       s.meta = null;
       s.failedSources = [];
+      s.failedEmbeds = {};
       s.caption = {
         selected: null,
         asTrack: false,

@@ -423,6 +423,8 @@
     "airs": "Airs",
     "endsAt": "Ends at {{time}}",
     "trailer": "Trailer",
+    "trailers": "Trailers",
+    "similar": "Similar",
     "collection": {
       "movies": "Movies",
       "movie": "Movie",
@@ -1026,7 +1028,9 @@
         "popsicle": "Popsicle",
         "hulk": "Hulk",
         "autumn": "Autumn",
-        "skyrealm": "SkyRealm"
+        "skyrealm": "SkyRealm",
+        "frost": "Frost",
+        "christmas": "Christmas"
       },
       "title": "Appearance",
       "options": {
