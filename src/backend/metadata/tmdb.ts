@@ -24,6 +24,8 @@ import {
   TMDBSeasonMetaResult,
   TMDBShowData,
   TMDBShowSearchResult,
+  TMDBVideo,
+  TMDBVideosResponse,
 } from "./types/tmdb";
 import { mwFetch } from "../helpers/fetch";
 
@@ -511,6 +513,23 @@ export async function getMediaCredits(
   return get<TMDBCredits>(`/${endpoint}/${id}/credits`);
 }
 
+export async function getMediaVideos(
+  id: string,
+  type: TMDBContentTypes,
+): Promise<TMDBVideo[]> {
+  const endpoint = type === TMDBContentTypes.MOVIE ? "movie" : "tv";
+  const data = await get<TMDBVideosResponse>(`/${endpoint}/${id}/videos`);
+  return data.results.filter(
+    (video) =>
+      video.site === "YouTube" &&
+      (video.type === "Trailer" || video.type === "Teaser"),
+  );
+}
+
+/**
+ * Fetches recommended media from TMDB recommendations endpoint.
+ * Returns media that users commonly watch together based on ratings and popularity.
+ */
 export async function getRelatedMedia(
   id: string,
   type: TMDBContentTypes,
@@ -519,7 +538,7 @@ export async function getRelatedMedia(
   const endpoint = type === TMDBContentTypes.MOVIE ? "movie" : "tv";
   const data = await get<{
     results: TMDBMovieSearchResult[] | TMDBShowSearchResult[];
-  }>(`/${endpoint}/${id}/similar`);
+  }>(`/${endpoint}/${id}/recommendations`);
 
   return data.results.slice(0, limit);
 }
