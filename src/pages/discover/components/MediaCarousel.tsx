@@ -305,9 +305,9 @@ export function MediaCarousel({
   return (
     <div>
       <div className="flex items-center justify-between ml-2 md:ml-8 mt-2">
-        <div className="flex flex-col">
+        <div className="flex flex-col pl-2 lg:pl-[68px]">
           <div className="flex items-center gap-4">
-            <h2 className="text-2xl cursor-default font-bold text-white md:text-2xl pl-5 text-balance">
+            <h2 className="text-2xl cursor-default font-bold text-white md:text-2xl pl-0 text-balance">
               {sectionTitle}
             </h2>
             {showRecommendations &&
@@ -398,7 +398,7 @@ export function MediaCarousel({
             <Link
               to={generatedMoreLink}
               onClick={handleMoreClick}
-              className="flex px-5 items-center hover:text-type-link transition-colors"
+              className="flex items-center hover:text-type-link transition-colors"
             >
               <span className="text-sm">{t("discover.carousel.more")}</span>
               <Icon className="text-sm ml-1" icon={Icons.ARROW_RIGHT} />
@@ -477,7 +477,7 @@ export function MediaCarousel({
           }}
           onWheel={handleWheel}
         >
-          <div className="md:w-12" />
+          <div className="lg:w-12" />
 
           {media.length > 0
             ? media.map((item) => (
@@ -533,7 +533,7 @@ export function MediaCarousel({
             <MoreCard link={generatedMoreLink} />
           )}
 
-          <div className="md:w-12" />
+          <div className="lg:w-12" />
         </div>
 
         {!isMobile && (

@@ -58,6 +58,33 @@ function testProxy(url: string) {
   });
 }
 
+export async function fetchFebboxQuota(febboxKey: string | null): Promise<any> {
+  if (!febboxKey) {
+    return null;
+  }
+
+  console.log("SetupPart.tsx: Fetching Febbox quota");
+  try {
+    const response = await fetch("https://fed-api.pstream.mov/quota", {
+      headers: {
+        "ui-token": febboxKey,
+      },
+    });
+
+    if (!response.ok) {
+      console.error("Febbox quota API failed with status:", response.status);
+      return null;
+    }
+
+    const data = await response.json();
+    console.log("SetupPart.tsx: Febbox quota fetched successfully");
+    return data;
+  } catch (error) {
+    console.error("SetupPart.tsx: Error fetching Febbox quota:", error);
+    return null;
+  }
+}
+
 export async function testFebboxKey(febboxKey: string | null): Promise<Status> {
   const febboxApiTestUrl = `https://fed-api.pstream.mov/movie/tt0325980`;
 
@@ -107,9 +134,9 @@ export async function testFebboxKey(febboxKey: string | null): Promise<Status> {
         continue;
       }
 
-      const isVIPLink = Object.values(data.streams).some((link: any) => {
-        if (typeof link === "string") {
-          return link.toLowerCase().includes("vip");
+      const isVIPLink = Object.values(data.streams).some((stream: any) => {
+        if (typeof stream === "object" && stream.download) {
+          return stream.download.includes("/vip/");
         }
         return false;
       });

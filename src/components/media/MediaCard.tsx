@@ -50,6 +50,8 @@ function useIntersectionObserver(options: IntersectionObserverInit = {}) {
 
 // Skeleton Component
 export function MediaCardSkeleton() {
+  const enableMinimalCards = usePreferencesStore((s) => s.enableMinimalCards);
+
   return (
     <Flare.Base className="group -m-[0.705em] rounded-xl bg-background-main transition-colors duration-300">
       <Flare.Light
@@ -61,21 +63,30 @@ export function MediaCardSkeleton() {
       <Flare.Child className="pointer-events-auto relative mb-2 p-[0.4em] transition-transform duration-300 opacity-60">
         <div className="animate-pulse">
           {/* Poster skeleton - matches MediaCard poster dimensions exactly */}
-          <div className="relative mb-4 pb-[150%] w-full overflow-hidden rounded-xl bg-mediaCard-hoverBackground" />
+          <div
+            className={classNames(
+              "relative pb-[150%] w-full overflow-hidden rounded-xl bg-mediaCard-hoverBackground",
+              enableMinimalCards ? "" : "mb-4",
+            )}
+          />
 
-          {/* Title skeleton - matches MediaCard title dimensions */}
-          <div className="mb-1">
-            <div className="h-4 bg-mediaCard-hoverBackground rounded w-full mb-1" />
-            <div className="h-4 bg-mediaCard-hoverBackground rounded w-3/4 mb-1" />
-            <div className="h-4 bg-mediaCard-hoverBackground rounded w-1/2" />
-          </div>
+          {!enableMinimalCards && (
+            <>
+              {/* Title skeleton - matches MediaCard title dimensions */}
+              <div className="mb-1">
+                <div className="h-4 bg-mediaCard-hoverBackground rounded w-full mb-1" />
+                <div className="h-4 bg-mediaCard-hoverBackground rounded w-3/4 mb-1" />
+                <div className="h-4 bg-mediaCard-hoverBackground rounded w-1/2" />
+              </div>
 
-          {/* Dot list skeleton - matches MediaCard dot list */}
-          <div className="flex items-center gap-1">
-            <div className="h-3 bg-mediaCard-hoverBackground rounded w-12" />
-            <div className="h-1 w-1 bg-mediaCard-hoverBackground rounded-full" />
-            <div className="h-3 bg-mediaCard-hoverBackground rounded w-8" />
-          </div>
+              {/* Dot list skeleton - matches MediaCard dot list */}
+              <div className="flex items-center gap-1">
+                <div className="h-3 bg-mediaCard-hoverBackground rounded w-12" />
+                <div className="h-1 w-1 bg-mediaCard-hoverBackground rounded-full" />
+                <div className="h-3 bg-mediaCard-hoverBackground rounded w-8" />
+              </div>
+            </>
+          )}
         </div>
       </Flare.Child>
     </Flare.Base>
@@ -136,6 +147,7 @@ function MediaCardContent({
   const dotListContent = [t(`media.types.${media.type}`)];
 
   const [searchQuery] = useSearchQuery();
+  const enableMinimalCards = usePreferencesStore((s) => s.enableMinimalCards);
 
   // Simple intersection observer for lazy loading images
   const { targetRef, isIntersecting } = useIntersectionObserver({
@@ -185,10 +197,11 @@ function MediaCardContent({
         >
           <div
             className={classNames(
-              "relative mb-4 pb-[150%] w-full overflow-hidden rounded-xl bg-mediaCard-hoverBackground bg-cover bg-center transition-[border-radius] duration-300",
+              "relative pb-[150%] w-full overflow-hidden rounded-xl bg-mediaCard-hoverBackground bg-cover bg-center transition-[border-radius] duration-300",
               {
                 "group-hover:rounded-lg": canLink,
               },
+              enableMinimalCards ? "" : "mb-4",
             )}
             style={{
               backgroundImage: isIntersecting
@@ -272,48 +285,52 @@ function MediaCardContent({
             </div>
           </div>
 
-          <h1 className="mb-1 line-clamp-3 max-h-[4.5rem] text-ellipsis break-words font-bold text-white">
-            <span>{media.title}</span>
-          </h1>
-          <div className="media-info-container justify-content-center flex flex-wrap">
-            <DotList className="text-xs" content={dotListContent} />
-          </div>
+          {!enableMinimalCards && (
+            <>
+              <h1 className="mb-1 line-clamp-3 max-h-[4.5rem] text-ellipsis break-words font-bold text-white">
+                <span>{media.title}</span>
+              </h1>
+              <div className="media-info-container justify-content-center flex flex-wrap">
+                <DotList className="text-xs" content={dotListContent} />
+              </div>
 
-          {!closable && (
-            <div className="absolute bottom-0 translate-y-1 right-1">
-              <button
-                className="media-more-button p-2"
-                type="button"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  onShowDetails?.(media);
-                }}
-              >
-                <Icon
-                  className="text-xs font-semibold text-type-secondary"
-                  icon={Icons.ELLIPSIS}
-                />
-              </button>
-            </div>
-          )}
-          {editable && closable && (
-            <div className="absolute bottom-0 translate-y-1 right-1">
-              <button
-                className="media-more-button p-2"
-                type="button"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  onEdit?.();
-                }}
-              >
-                <Icon
-                  className="text-xs font-semibold text-type-secondary"
-                  icon={Icons.EDIT}
-                />
-              </button>
-            </div>
+              {!closable && (
+                <div className="absolute bottom-0 translate-y-1 right-1">
+                  <button
+                    className="media-more-button p-2"
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      onShowDetails?.(media);
+                    }}
+                  >
+                    <Icon
+                      className="text-xs font-semibold text-type-secondary"
+                      icon={Icons.ELLIPSIS}
+                    />
+                  </button>
+                </div>
+              )}
+              {editable && closable && (
+                <div className="absolute bottom-0 translate-y-1 right-1">
+                  <button
+                    className="media-more-button p-2"
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      onEdit?.();
+                    }}
+                  >
+                    <Icon
+                      className="text-xs font-semibold text-type-secondary"
+                      icon={Icons.EDIT}
+                    />
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </Flare.Child>
       </Flare.Base>

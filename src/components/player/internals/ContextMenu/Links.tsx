@@ -138,13 +138,27 @@ export function Link(props: {
 
 export function ChevronLink(props: {
   rightText?: string;
+  selected?: boolean;
   onClick?: () => void;
   children?: ReactNode;
   active?: boolean;
   box?: boolean;
   disabled?: boolean;
 }) {
-  const rightContent = <Chevron>{props.rightText}</Chevron>;
+  const rightContent = (
+    <span className="text-white flex items-center font-medium">
+      {props.selected ? (
+        <Icon
+          icon={Icons.CIRCLE_CHECK}
+          className="text-xl text-video-context-type-accent"
+        />
+      ) : (
+        props.rightText
+      )}
+      <Icon className="text-xl ml-1 -mr-1.5" icon={Icons.CHEVRON_RIGHT} />
+    </span>
+  );
+
   return (
     <Link
       onClick={props.onClick}
@@ -169,23 +183,26 @@ export function SelectableLink(props: {
   disabled?: boolean;
   error?: ReactNode;
   box?: boolean;
+  rightSide?: ReactNode;
 }) {
-  let rightContent;
-  if (props.selected) {
-    rightContent = (
-      <Icon
-        icon={Icons.CIRCLE_CHECK}
-        className="text-xl text-video-context-type-accent"
-      />
-    );
+  let rightContent = props.rightSide; // Use custom rightSide if provided
+  if (!rightContent) {
+    if (props.selected) {
+      rightContent = (
+        <Icon
+          icon={Icons.CIRCLE_CHECK}
+          className="text-xl text-video-context-type-accent"
+        />
+      );
+    }
+    if (props.error)
+      rightContent = (
+        <span className="flex items-center text-video-context-error">
+          <Icon className="ml-2" icon={Icons.WARNING} />
+        </span>
+      );
+    if (props.loading) rightContent = <Spinner className="text-lg" />; // should override selected and error
   }
-  if (props.error)
-    rightContent = (
-      <span className="flex items-center text-video-context-error">
-        <Icon className="ml-2" icon={Icons.WARNING} />
-      </span>
-    );
-  if (props.loading) rightContent = <Spinner className="text-lg" />; // should override selected and error
 
   return (
     <Link

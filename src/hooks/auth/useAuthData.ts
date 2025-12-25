@@ -65,10 +65,8 @@ export function useAuthData() {
   const setEnableLastSuccessfulSource = usePreferencesStore(
     (s) => s.setEnableLastSuccessfulSource,
   );
-  const setDisabledSources = usePreferencesStore((s) => s.setDisabledSources);
   const setEmbedOrder = usePreferencesStore((s) => s.setEmbedOrder);
   const setEnableEmbedOrder = usePreferencesStore((s) => s.setEnableEmbedOrder);
-  const setDisabledEmbeds = usePreferencesStore((s) => s.setDisabledEmbeds);
 
   const setProxyTmdb = usePreferencesStore((s) => s.setProxyTmdb);
 
@@ -90,6 +88,12 @@ export function useAuthData() {
   );
   const setEnableAutoResumeOnPlaybackError = usePreferencesStore(
     (s) => s.setEnableAutoResumeOnPlaybackError,
+  );
+  const setKeyboardShortcuts = usePreferencesStore(
+    (s) => s.setKeyboardShortcuts,
+  );
+  const setEnableMinimalCards = usePreferencesStore(
+    (s) => s.setEnableMinimalCards,
   );
 
   const login = useCallback(
@@ -212,20 +216,12 @@ export function useAuthData() {
         setEnableLastSuccessfulSource(settings.enableLastSuccessfulSource);
       }
 
-      if (settings.disabledSources !== undefined) {
-        setDisabledSources(settings.disabledSources ?? []);
-      }
-
       if (settings.embedOrder !== undefined) {
         setEmbedOrder(settings.embedOrder ?? []);
       }
 
       if (settings.enableEmbedOrder !== undefined) {
         setEnableEmbedOrder(settings.enableEmbedOrder);
-      }
-
-      if (settings.disabledEmbeds !== undefined) {
-        setDisabledEmbeds(settings.disabledEmbeds ?? []);
       }
 
       if (settings.proxyTmdb !== undefined) {
@@ -275,6 +271,14 @@ export function useAuthData() {
           settings.enableAutoResumeOnPlaybackError,
         );
       }
+
+      if (settings.keyboardShortcuts !== undefined) {
+        setKeyboardShortcuts(settings.keyboardShortcuts);
+      }
+
+      if (settings.enableMinimalCards !== undefined) {
+        setEnableMinimalCards(settings.enableMinimalCards);
+      }
     },
     [
       replaceBookmarks,
@@ -296,10 +300,8 @@ export function useAuthData() {
       setEnableSourceOrder,
       setLastSuccessfulSource,
       setEnableLastSuccessfulSource,
-      setDisabledSources,
       setEmbedOrder,
       setEnableEmbedOrder,
-      setDisabledEmbeds,
       setProxyTmdb,
       setFebboxKey,
       setdebridToken,
@@ -311,6 +313,8 @@ export function useAuthData() {
       setManualSourceSelection,
       setEnableDoubleClickToSeek,
       setEnableAutoResumeOnPlaybackError,
+      setKeyboardShortcuts,
+      setEnableMinimalCards,
     ],
   );
 

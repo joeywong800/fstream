@@ -2,6 +2,11 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { immer } from "zustand/middleware/immer";
 
+import {
+  DEFAULT_KEYBOARD_SHORTCUTS,
+  KeyboardShortcuts,
+} from "@/utils/keyboardShortcuts";
+
 export interface PreferencesStore {
   enableThumbnails: boolean;
   enableAutoplay: boolean;
@@ -11,15 +16,14 @@ export interface PreferencesStore {
   enableDetailsModal: boolean;
   enableImageLogos: boolean;
   enableCarouselView: boolean;
+  enableMinimalCards: boolean;
   forceCompactEpisodeView: boolean;
   sourceOrder: string[];
   enableSourceOrder: boolean;
   lastSuccessfulSource: string | null;
   enableLastSuccessfulSource: boolean;
-  disabledSources: string[];
   embedOrder: string[];
   enableEmbedOrder: boolean;
-  disabledEmbeds: string[];
   proxyTmdb: boolean;
   febboxKey: string | null;
   debridToken: string | null;
@@ -31,6 +35,7 @@ export interface PreferencesStore {
   manualSourceSelection: boolean;
   enableDoubleClickToSeek: boolean;
   enableAutoResumeOnPlaybackError: boolean;
+  keyboardShortcuts: KeyboardShortcuts;
 
   setEnableThumbnails(v: boolean): void;
   setEnableAutoplay(v: boolean): void;
@@ -40,15 +45,14 @@ export interface PreferencesStore {
   setEnableDetailsModal(v: boolean): void;
   setEnableImageLogos(v: boolean): void;
   setEnableCarouselView(v: boolean): void;
+  setEnableMinimalCards(v: boolean): void;
   setForceCompactEpisodeView(v: boolean): void;
   setSourceOrder(v: string[]): void;
   setEnableSourceOrder(v: boolean): void;
   setLastSuccessfulSource(v: string | null): void;
   setEnableLastSuccessfulSource(v: boolean): void;
-  setDisabledSources(v: string[]): void;
   setEmbedOrder(v: string[]): void;
   setEnableEmbedOrder(v: boolean): void;
-  setDisabledEmbeds(v: string[]): void;
   setProxyTmdb(v: boolean): void;
   setFebboxKey(v: string | null): void;
   setdebridToken(v: string | null): void;
@@ -60,6 +64,7 @@ export interface PreferencesStore {
   setManualSourceSelection(v: boolean): void;
   setEnableDoubleClickToSeek(v: boolean): void;
   setEnableAutoResumeOnPlaybackError(v: boolean): void;
+  setKeyboardShortcuts(v: KeyboardShortcuts): void;
 }
 
 export const usePreferencesStore = create(
@@ -73,15 +78,14 @@ export const usePreferencesStore = create(
       enableDetailsModal: false,
       enableImageLogos: true,
       enableCarouselView: false,
+      enableMinimalCards: false,
       forceCompactEpisodeView: false,
       sourceOrder: [],
       enableSourceOrder: false,
       lastSuccessfulSource: null,
       enableLastSuccessfulSource: false,
-      disabledSources: [],
       embedOrder: [],
       enableEmbedOrder: false,
-      disabledEmbeds: [],
       proxyTmdb: false,
       febboxKey: null,
       debridToken: null,
@@ -93,6 +97,7 @@ export const usePreferencesStore = create(
       manualSourceSelection: false,
       enableDoubleClickToSeek: false,
       enableAutoResumeOnPlaybackError: true,
+      keyboardShortcuts: DEFAULT_KEYBOARD_SHORTCUTS,
       setEnableThumbnails(v) {
         set((s) => {
           s.enableThumbnails = v;
@@ -133,6 +138,11 @@ export const usePreferencesStore = create(
           s.enableCarouselView = v;
         });
       },
+      setEnableMinimalCards(v) {
+        set((s) => {
+          s.enableMinimalCards = v;
+        });
+      },
       setForceCompactEpisodeView(v) {
         set((s) => {
           s.forceCompactEpisodeView = v;
@@ -158,11 +168,6 @@ export const usePreferencesStore = create(
           s.enableLastSuccessfulSource = v;
         });
       },
-      setDisabledSources(v) {
-        set((s) => {
-          s.disabledSources = v;
-        });
-      },
       setEmbedOrder(v) {
         set((s) => {
           s.embedOrder = v;
@@ -171,11 +176,6 @@ export const usePreferencesStore = create(
       setEnableEmbedOrder(v) {
         set((s) => {
           s.enableEmbedOrder = v;
-        });
-      },
-      setDisabledEmbeds(v) {
-        set((s) => {
-          s.disabledEmbeds = v;
         });
       },
       setProxyTmdb(v) {
@@ -236,6 +236,11 @@ export const usePreferencesStore = create(
       setEnableAutoResumeOnPlaybackError(v) {
         set((s) => {
           s.enableAutoResumeOnPlaybackError = v;
+        });
+      },
+      setKeyboardShortcuts(v) {
+        set((s) => {
+          s.keyboardShortcuts = v;
         });
       },
     })),

@@ -2,6 +2,7 @@ import { ofetch } from "ofetch";
 
 import { getAuthHeaders } from "@/backend/accounts/auth";
 import { AccountWithToken } from "@/stores/auth";
+import { KeyboardShortcuts } from "@/utils/keyboardShortcuts";
 
 export interface SettingsInput {
   applicationLanguage?: string;
@@ -19,15 +20,14 @@ export interface SettingsInput {
   enableDetailsModal?: boolean;
   enableImageLogos?: boolean;
   enableCarouselView?: boolean;
+  enableMinimalCards?: boolean;
   forceCompactEpisodeView?: boolean;
   sourceOrder?: string[] | null;
   enableSourceOrder?: boolean;
   lastSuccessfulSource?: string | null;
   enableLastSuccessfulSource?: boolean;
-  disabledSources?: string[] | null;
   embedOrder?: string[] | null;
   enableEmbedOrder?: boolean;
-  disabledEmbeds?: string[] | null;
   proxyTmdb?: boolean;
   enableLowPerformanceMode?: boolean;
   enableNativeSubtitles?: boolean;
@@ -36,6 +36,7 @@ export interface SettingsInput {
   manualSourceSelection?: boolean;
   enableDoubleClickToSeek?: boolean;
   enableAutoResumeOnPlaybackError?: boolean;
+  keyboardShortcuts?: KeyboardShortcuts;
 }
 
 export interface SettingsResponse {
@@ -54,15 +55,14 @@ export interface SettingsResponse {
   enableDetailsModal?: boolean;
   enableImageLogos?: boolean;
   enableCarouselView?: boolean;
+  enableMinimalCards?: boolean;
   forceCompactEpisodeView?: boolean;
   sourceOrder?: string[] | null;
   enableSourceOrder?: boolean;
   lastSuccessfulSource?: string | null;
   enableLastSuccessfulSource?: boolean;
-  disabledSources?: string[] | null;
   embedOrder?: string[] | null;
   enableEmbedOrder?: boolean;
-  disabledEmbeds?: string[] | null;
   proxyTmdb?: boolean;
   enableLowPerformanceMode?: boolean;
   enableNativeSubtitles?: boolean;
@@ -71,6 +71,7 @@ export interface SettingsResponse {
   manualSourceSelection?: boolean;
   enableDoubleClickToSeek?: boolean;
   enableAutoResumeOnPlaybackError?: boolean;
+  keyboardShortcuts?: KeyboardShortcuts;
 }
 
 export function updateSettings(

@@ -64,14 +64,13 @@ export function useSettingsState(
   enableSourceOrder: boolean,
   lastSuccessfulSource: string | null,
   enableLastSuccessfulSource: boolean,
-  disabledSources: string[],
   embedOrder: string[],
   enableEmbedOrder: boolean,
-  disabledEmbeds: string[],
   proxyTmdb: boolean,
   enableSkipCredits: boolean,
   enableImageLogos: boolean,
   enableCarouselView: boolean,
+  enableMinimalCards: boolean,
   forceCompactEpisodeView: boolean,
   enableLowPerformanceMode: boolean,
   enableNativeSubtitles: boolean,
@@ -190,12 +189,6 @@ export function useSettingsState(
     enableLastSuccessfulSourceChanged,
   ] = useDerived(enableLastSuccessfulSource);
   const [
-    disabledSourcesState,
-    setDisabledSourcesState,
-    resetDisabledSources,
-    disabledSourcesChanged,
-  ] = useDerived(disabledSources);
-  const [
     embedOrderState,
     setEmbedOrderState,
     resetEmbedOrder,
@@ -207,12 +200,6 @@ export function useSettingsState(
     resetEnableEmbedOrder,
     enableEmbedOrderChanged,
   ] = useDerived(enableEmbedOrder);
-  const [
-    disabledEmbedsState,
-    setDisabledEmbedsState,
-    resetDisabledEmbeds,
-    disabledEmbedsChanged,
-  ] = useDerived(disabledEmbeds);
   const [proxyTmdbState, setProxyTmdbState, resetProxyTmdb, proxyTmdbChanged] =
     useDerived(proxyTmdb);
   const [
@@ -221,6 +208,12 @@ export function useSettingsState(
     resetEnableCarouselView,
     enableCarouselViewChanged,
   ] = useDerived(enableCarouselView);
+  const [
+    enableMinimalCardsState,
+    setEnableMinimalCardsState,
+    resetEnableMinimalCards,
+    enableMinimalCardsChanged,
+  ] = useDerived(enableMinimalCards);
   const [
     forceCompactEpisodeViewState,
     setForceCompactEpisodeViewState,
@@ -293,12 +286,11 @@ export function useSettingsState(
     resetEnableSourceOrder();
     resetLastSuccessfulSource();
     resetEnableLastSuccessfulSource();
-    resetDisabledSources();
     resetEmbedOrder();
     resetEnableEmbedOrder();
-    resetDisabledEmbeds();
     resetProxyTmdb();
     resetEnableCarouselView();
+    resetEnableMinimalCards();
     resetForceCompactEpisodeView();
     resetEnableLowPerformanceMode();
     resetEnableNativeSubtitles();
@@ -332,12 +324,11 @@ export function useSettingsState(
     enableSourceOrderChanged ||
     lastSuccessfulSourceChanged ||
     enableLastSuccessfulSourceChanged ||
-    disabledSourcesChanged ||
     embedOrderChanged ||
     enableEmbedOrderChanged ||
-    disabledEmbedsChanged ||
     proxyTmdbChanged ||
     enableCarouselViewChanged ||
+    enableMinimalCardsChanged ||
     forceCompactEpisodeViewChanged ||
     enableLowPerformanceModeChanged ||
     enableNativeSubtitlesChanged ||
@@ -465,11 +456,6 @@ export function useSettingsState(
       set: setProxyTmdbState,
       changed: proxyTmdbChanged,
     },
-    disabledSources: {
-      state: disabledSourcesState,
-      set: setDisabledSourcesState,
-      changed: disabledSourcesChanged,
-    },
     embedOrder: {
       state: embedOrderState,
       set: setEmbedOrderState,
@@ -480,15 +466,15 @@ export function useSettingsState(
       set: setEnableEmbedOrderState,
       changed: enableEmbedOrderChanged,
     },
-    disabledEmbeds: {
-      state: disabledEmbedsState,
-      set: setDisabledEmbedsState,
-      changed: disabledEmbedsChanged,
-    },
     enableCarouselView: {
       state: enableCarouselViewState,
       set: setEnableCarouselViewState,
       changed: enableCarouselViewChanged,
+    },
+    enableMinimalCards: {
+      state: enableMinimalCardsState,
+      set: setEnableMinimalCardsState,
+      changed: enableMinimalCardsChanged,
     },
     forceCompactEpisodeView: {
       state: forceCompactEpisodeViewState,

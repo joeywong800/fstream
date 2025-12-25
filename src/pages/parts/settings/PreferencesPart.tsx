@@ -8,9 +8,10 @@ import { Button } from "@/components/buttons/Button";
 import { Toggle } from "@/components/buttons/Toggle";
 import { FlagIcon } from "@/components/FlagIcon";
 import { Dropdown } from "@/components/form/Dropdown";
-import { SortableListWithToggles } from "@/components/form/SortableListWithToggles";
+import { SortableList } from "@/components/form/SortableList";
 import { Heading1 } from "@/components/utils/Text";
 import { appLanguageOptions } from "@/setup/i18n";
+import { useOverlayStack } from "@/stores/interface/overlayStack";
 import { isAutoplayAllowed } from "@/utils/autoplay";
 import { getLocaleInfo, sortLangCodes } from "@/utils/language";
 
@@ -29,8 +30,6 @@ export function PreferencesPart(props: {
   setenableSourceOrder: (v: boolean) => void;
   enableLastSuccessfulSource: boolean;
   setEnableLastSuccessfulSource: (v: boolean) => void;
-  disabledSources: string[];
-  setDisabledSources: (v: string[]) => void;
   enableLowPerformanceMode: boolean;
   setEnableLowPerformanceMode: (v: boolean) => void;
   enableHoldToBoost: boolean;
@@ -43,6 +42,7 @@ export function PreferencesPart(props: {
   setEnableAutoResumeOnPlaybackError: (v: boolean) => void;
 }) {
   const { t } = useTranslation();
+  const { showModal } = useOverlayStack();
   const sorted = sortLangCodes(appLanguageOptions.map((item) => item.code));
 
   const allowAutoplay = isAutoplayAllowed();
@@ -67,21 +67,13 @@ export function PreferencesPart(props: {
       id,
       name: allSources.find((s) => s.id === id)?.name || id,
       disabled: !currentDeviceSources.find((s) => s.id === id),
-      enabled: !props.disabledSources.includes(id),
     }));
-  }, [props.sourceOrder, props.disabledSources, allSources]);
+  }, [props.sourceOrder, allSources]);
 
   const navigate = useNavigate();
 
   const handleLowPerformanceModeToggle = () => {
     props.setEnableLowPerformanceMode(!props.enableLowPerformanceMode);
-  };
-
-  const handleSourceToggle = (sourceId: string) => {
-    const newDisabledSources = props.disabledSources.includes(sourceId)
-      ? props.disabledSources.filter((id) => id !== sourceId)
-      : [...props.disabledSources, sourceId];
-    props.setDisabledSources(newDisabledSources);
   };
 
   return (
@@ -246,6 +238,22 @@ export function PreferencesPart(props: {
               </p>
             </div>
           </div>
+
+          {/* Keyboard Shortcuts Preference */}
+          <div>
+            <p className="text-white font-bold mb-3">
+              {t("settings.preferences.keyboardShortcuts")}
+            </p>
+            <p className="max-w-[25rem] font-medium">
+              {t("settings.preferences.keyboardShortcutsDescription")}
+            </p>
+          </div>
+          <Button
+            theme="secondary"
+            onClick={() => showModal("keyboard-commands-edit")}
+          >
+            {t("settings.preferences.keyboardShortcutsLabel")}
+          </Button>
         </div>
 
         {/* Column */}
@@ -348,12 +356,11 @@ export function PreferencesPart(props: {
 
             {props.enableSourceOrder && (
               <div className="w-full flex flex-col gap-4">
-                <SortableListWithToggles
+                <SortableList
                   items={sourceItems}
                   setItems={(items) =>
                     props.setSourceOrder(items.map((item) => item.id))
                   }
-                  onToggle={handleSourceToggle}
                 />
                 <Button
                   className="max-w-[25rem]"

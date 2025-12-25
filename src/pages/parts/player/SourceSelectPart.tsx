@@ -28,15 +28,33 @@ function EmbedOption(props: {
     return sourceMeta?.name ?? unknownEmbedName;
   }, [props.embedId, unknownEmbedName]);
 
-  const { run, errored, loading } = useEmbedScraping(
+  const { run, errored, loading, notFound } = useEmbedScraping(
     props.routerId,
     props.sourceId,
     props.url,
     props.embedId,
   );
 
+  let rightSide;
+  if (loading) {
+    rightSide = undefined; // Let SelectableLink handle loading
+  } else if (notFound) {
+    rightSide = (
+      <div className="flex items-center text-video-scraping-noresult">
+        <div className="w-4 h-4 rounded-full border-2 border-current bg-current flex items-center justify-center">
+          <div className="w-2 h-0.5 bg-background-main rounded-full" />
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <SelectableLink loading={loading} error={errored} onClick={run}>
+    <SelectableLink
+      loading={loading}
+      error={errored && !notFound}
+      onClick={run}
+      rightSide={rightSide}
+    >
       <span className="flex flex-col">
         <span>{embedName}</span>
       </span>
@@ -135,15 +153,13 @@ export function SourceSelectPart(props: { media: ScrapeMedia }) {
   const enableLastSuccessfulSource = usePreferencesStore(
     (s) => s.enableLastSuccessfulSource,
   );
-  const disabledSources = usePreferencesStore((s) => s.disabledSources);
 
   const sources = useMemo(() => {
     const metaType = props.media.type;
     if (!metaType) return [];
     const allSources = getCachedMetadata()
       .filter((v) => v.type === "source")
-      .filter((v) => v.mediaTypes?.includes(metaType))
-      .filter((v) => !disabledSources.includes(v.id));
+      .filter((v) => v.mediaTypes?.includes(metaType));
 
     if (!enableSourceOrder || preferredSourceOrder.length === 0) {
       // Even without custom source order, prioritize last successful source if enabled
@@ -191,7 +207,6 @@ export function SourceSelectPart(props: { media: ScrapeMedia }) {
     props.media.type,
     preferredSourceOrder,
     enableSourceOrder,
-    disabledSources,
     lastSuccessfulSource,
     enableLastSuccessfulSource,
   ]);

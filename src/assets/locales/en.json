@@ -123,12 +123,12 @@
     },
     "q24": {
       "title": "My febbox token fails during setup. What should I do?",
-      "body": "Your ISP might be blocking FED API. Set a custom DNS like 1.1.1.1 or NextDNS. You can also change your region in the admin panel.",
+      "body": "Your ISP might be blocking FED API. Use a VPN to bypass the block, we recommend Cloudflare WARP because it's free and easy to use. You can also change your region in the admin panel.",
       "section": "connections"
     },
     "q25": {
       "title": "How do I change languages?",
-      "body": "We prioritize English, but some sources offer other languages. Try switching sources. For FED API, only Safari supports audio switching in MP4 files.",
+      "body": "We prioritize English, but some sources offer other languages. Try switching sources.",
       "section": "language"
     },
     "q26": {
@@ -255,8 +255,8 @@
         "skipBackward5": "Skip backward 5 seconds",
         "skipBackward10": "Skip backward 10 seconds",
         "skipForward10": "Skip forward 10 seconds",
-        "skipForward1": "Skip forward 1 second (when paused)",
-        "skipBackward1": "Skip backward 1 second (when paused)",
+        "skipForward1": "Skip forward 1 second",
+        "skipBackward1": "Skip backward 1 second",
         "jumpTo0": "Jump to 0% (beginning)",
         "jumpTo9": "Jump to 90%",
         "increaseVolume": "Increase volume",
@@ -265,17 +265,32 @@
         "changeSpeed": "Increase/decrease playback speed",
         "toggleFullscreen": "Toggle fullscreen",
         "toggleCaptions": "Toggle captions",
+        "randomCaption": "Select random caption from last used language",
         "syncSubtitlesEarlier": "Sync subtitles earlier (-0.5s)",
         "syncSubtitlesLater": "Sync subtitles later (+0.5s)",
         "barrelRoll": "Do a barrel roll! 🌀",
         "closeOverlay": "Close overlay/modal",
+        "nextEpisode": "Next episode",
+        "previousEpisode": "Previous episode",
         "widescreenMode": "to toggle the widescreen button visibility",
         "copyLinkWithTime": "+ click the title to copy the link with time"
       },
       "conditions": {
         "notInWatchParty": "Not in watch party",
-        "whenPaused": "When paused"
-      }
+        "showsOnly": "Shows only"
+      },
+      "editInSettings": "Edit keyboard commands from settings",
+      "clickToEdit": "Click on a key badge to edit it",
+      "conflict": "conflict",
+      "conflicts": "conflicts",
+      "detected": "detected",
+      "resetAllToDefault": "Reset All to Default",
+      "pressKey": "Press a key...",
+      "none": "None",
+      "save": "Save",
+      "cancel": "Cancel",
+      "saveChanges": "Save Changes",
+      "resetToDefault": "Reset to default"
     }
   },
   "home": {
@@ -317,10 +332,30 @@
         "titlePlaceholder": "Enter a title for your bookmark",
         "yearLabel": "Year",
         "yearPlaceholder": "Enter a year for your bookmark"
+      },
+      "sorting": {
+        "label": "Sort by",
+        "options": {
+          "date": "Default (Date added)",
+          "titleAsc": "Title A-Z",
+          "titleDesc": "Title Z-A",
+          "yearAsc": "Release Date Oldest-Newest",
+          "yearDesc": "Release Date Newest-Oldest"
+        }
       }
     },
     "continueWatching": {
-      "sectionTitle": "Continue Watching..."
+      "sectionTitle": "Continue Watching...",
+      "sorting": {
+        "label": "Sort by",
+        "options": {
+          "date": "Default (Date added)",
+          "titleAsc": "Title A-Z",
+          "titleDesc": "Title Z-A",
+          "yearAsc": "Release Date Oldest-Newest",
+          "yearDesc": "Release Date Newest-Oldest"
+        }
+      }
     },
     "mediaList": {
       "stopEditing": "Stop editing"
@@ -392,6 +427,18 @@
           "It's the Great Pumpkin, Charlie Brown!"
         ]
       }
+    },
+    "support": {
+      "title": "P-Stream needs your help!",
+      "description": "P-Stream is run at a loss, and we need help to keep it ad free! If you enjoy using P-Stream, please consider donating to help us cover our costs.",
+      "moreInfo": "More info",
+      "explanation": "If you aren't using the extension or don't have FED API set up, it may be harder to find content! We want to fix this, but it's a lot harder to provide content without expensive servers. So please, if you enjoy using P-Stream, please consider donating to help us cover our growing costs.",
+      "explanation2": "If you want more info, please join our ",
+      "discord": "Discord",
+      "thankYou": "Thank you for your support!",
+      "donate": "Donate",
+      "label": "Project Funding: ${{current}} / ${{goal}}",
+      "complete": "complete"
     }
   },
   "media": {
@@ -567,6 +614,8 @@
       "extensionHelp": "If you've installed the extension but it's not detected, <bold>open the extension through your browsers extension menu</bold> and follow the steps on screen.",
       "linkChrome": "Install Chrome extension",
       "linkFirefox": "Install Firefox extension",
+      "linkUserscript": "Alternative Userscript",
+      "userscriptNote": "(The extension is more reliable than the userscript!)",
       "notDetecting": "Installed on Chrome, but the site isn't detecting it? Try reloading the page!",
       "notDetectingAction": "Reload page",
       "status": {
@@ -610,7 +659,7 @@
           "defaultDescription": "Uses P-Stream's built-in proxy. It's the easiest option but might be slower due to shared bandwidth.",
           "fedapi": {
             "fedapi": "Additional: Febbox token",
-            "fedapiDescription": "Bring your own FREE Febbox account to gain access to FED API and CIA API, the best sources with 4K quality, Dolby Atmos, skip intro and the fastest load times! Highly recommended option!"
+            "fedapiDescription": "Bring your own FREE Febbox account to gain access to FED API, the best sources with 4K quality, Dolby Atmos, skip intro and the fastest load times! Highly recommended option!"
           },
           "outro": "If you have more questions on how this works, feel free to ask on the <0>P-Stream Discord</0> server!"
         },
@@ -647,6 +696,9 @@
           "description": "Setup a free proxy in just 5 minutes! Improves loading reliability!",
           "quality": "Good quality",
           "title": "Custom proxy"
+        },
+        "addons": {
+          "title": "Additional sources:"
         }
       },
       "title": "Let's get you setup with P-Stream 🥳"
@@ -763,6 +815,8 @@
         "previewLabel": "Subtitle preview:",
         "offChoice": "Off",
         "onChoice": "On",
+        "autoSelectChoice": "Auto select",
+        "autoSelectDifferentChoice": "Tap again to auto select different subtitle",
         "SourceChoice": "Source Subtitles",
         "OpenSubtitlesChoice": "External Subtitles",
         "loadingExternal": "Loading external subtitles...",
@@ -905,7 +959,7 @@
     "title": "Support",
     "text": "P-Stream is designed to be as user-friendly as possible. However, people still have questions and issues. This page is here to help resolve these shortcomings",
     "q1": {
-      "body": "Well, you can join the official <0>P-Stream discord</0> and ask questions there or you can email the one provided at the bottom of this page.",
+      "body": "You can join the official <0>P-Stream discord</0> and ask questions there or you can email the one provided at the bottom of this page.",
       "title": "Where can I get help?"
     },
     "q2": {
@@ -917,7 +971,7 @@
     "title": "Jip",
     "text": "P-Stream didn't fall out of a coconut tree, it was made mostly by a single person (a very epic one at that).",
     "q1": {
-      "body": "Well, you can join the official <0>P-Stream discord</0> and ask questions there or you can email the one provided at the bottom of this page.",
+      "body": "You can join the official <0>P-Stream discord</0> and ask questions there or you can email the one provided at the bottom of this page.",
       "title": "Where can I get help?"
     },
     "q2": {
@@ -1028,7 +1082,7 @@
         "popsicle": "Popsicle",
         "hulk": "Hulk",
         "autumn": "Autumn",
-        "skyrealm": "SkyRealm",
+        "cobalt": "Cobalt",
         "frost": "Frost",
         "christmas": "Christmas"
       },
@@ -1050,6 +1104,9 @@
         "carouselView": "Carousel view",
         "carouselViewDescription": "Display your currently watching and bookmark sections as carousels instead of a grid. Disabled by default.",
         "carouselViewLabel": "Carousel view",
+        "minimalCards": "Minimal cards",
+        "minimalCardsDescription": "Hide text content (title, type, year) on media cards, showing only the poster image.",
+        "minimalCardsLabel": "Minimal cards",
         "forceCompactEpisodeView": "Force compact episode view",
         "forceCompactEpisodeViewDescription": "Force the episode carousel in the player to use the \"classic\" compact vertical view. Disabled by default.",
         "homeSectionOrder": "Home section order",
@@ -1132,6 +1189,9 @@
       "doubleClickToSeek": "Double tap to seek",
       "doubleClickToSeekDescription": "Double tap on the left or right side of the player to seek 10 seconds forward or backward.",
       "doubleClickToSeekLabel": "Enable double tap to seek",
+      "keyboardShortcuts": "Keyboard Shortcuts",
+      "keyboardShortcutsDescription": "Customize the keyboard shortcuts for the application. Hold ` to show this help anytime",
+      "keyboardShortcutsLabel": "Customize Keyboard Shortcuts",
       "sourceOrder": "Reordering sources",
       "sourceOrderDescription": "Drag and drop to reorder sources. This will determine the order in which sources are checked for the media you are trying to watch. If a source is greyed out, it means the <bold>extension</bold> is required for that source. <br><br> <strong>(The default order is best for most users)</strong>",
       "sourceOrderEnableLabel": "Custom source order",
@@ -1248,7 +1308,7 @@
   "fedapi": {
     "onboarding": {
       "title": "Febbox token",
-      "description": "Bring your own FREE Febbox account to gain access to FED API and CIA API, the best sources with 4K quality, Dolby Atmos, skip intro and the fastest load times! Highly recommended option!"
+      "description": "Bring your own FREE Febbox account to gain access to FED API, the best sources with 4K quality, Dolby Atmos, skip intro and the fastest load times! Highly recommended option!"
     },
     "setup": {
       "title": "To get your UI token:",
@@ -1259,8 +1319,7 @@
         "2": "2. Open DevTools or inspect the page",
         "3": "3. Go to Application tab → Cookies",
         "4": "4. Copy the 'ui' cookie's value.",
-        "5": "5. Close the tab, but do NOT logout!",
-        "warning": "(Do not share this token!)"
+        "5": "5. Close the tab, but do NOT logout!"
       },
       "tokenLabel": "Token",
       "tokenExample": {
@@ -1269,7 +1328,9 @@
         "description": "This is what a Febbox UI token looks like:",
         "warning": "Don't try to use, it's fake.",
         "close": "Got it"
-      }
+      },
+      "traffic": "{{used}} / {{limit}} High-speed Traffic • Resets in {{reset}}",
+      "trafficExplanation": "Febbox gives you 100GB/month of high-speed traffic, the streams might buffer more after you've used up your quota. Depends on your internet speed and the quality of the stream."
     },
     "status": {
       "success": "success",
